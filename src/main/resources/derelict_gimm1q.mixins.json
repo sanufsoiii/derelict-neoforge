@@ -1,0 +1,17 @@
+{
+    "required": false,
+    "minVersion": "0.8",
+    "package": "dev.mim1q.derelict.vendor.gimm1q.mixin",
+    "mixins": [
+        "entity.LivingEntityMixin"
+    ],
+    "client": [
+        "client.ClientPlayerScreenShakeMixin",
+        "client.DrawContextMixin",
+        "client.item.ItemRendererMixin",
+        "client.model.CuboidOverlayRendererMixin",
+        "client.model.EntityModelMixin",
+        "client.model.feature.FeatureRendererMixin",
+        "client.tooltip.ItemStackTooltipMixin"
+    ]
+}

@@ -1,0 +1,230 @@
+package dev.mim1q.derelict.vendor.gimm1q.registry;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParser;
+import com.mojang.serialization.JsonOps;
+import dev.mim1q.derelict.vendor.gimm1q.Gimm1q;
+import dev.mim1q.derelict.vendor.gimm1q.network.s2c.ValueCalculatorSyncS2CPacket;
+import dev.mim1q.derelict.vendor.gimm1q.valuecalculators.ValueCalculatorsReloadedCallback;
+import dev.mim1q.derelict.vendor.gimm1q.valuecalculators.internal.ValueCalculatorInternal;
+import dev.mim1q.derelict.vendor.gimm1q.valuecalculators.parameters.ValueCalculatorContext;
+import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.resources.ResourceManager;
+import org.apache.commons.lang3.StringEscapeUtils;
+
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
+public class ValueCalculatorResourceReloader implements SimpleSynchronousResourceReloadListener {
+    private ValueCalculatorResourceReloader() {
+    }
+
+    public static final ValueCalculatorResourceReloader INSTANCE = new ValueCalculatorResourceReloader();
+
+    private static final ResourceLocation ID = Gimm1q.id("value_calculators");
+    private final ConcurrentHashMap<ResourceLocation, List<ValueCalculatorInternal>> map = new ConcurrentHashMap<>();
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+
+    @Override
+    public ResourceLocation getFabricId() {
+        return ID;
+    }
+
+    @Override
+    public void onResourceManagerReload(ResourceManager manager) {
+        map.clear();
+
+        var idsToStrings = loadFromDataPacks(manager);
+        var templateCount = saveTemplatesToConfigFolder(idsToStrings);
+
+        Gimm1q.LOGGER.info("Saved {} Value Calculator templates to config folder", templateCount);
+
+        loadFromConfigFolder(idsToStrings.keySet());
+        ValueCalculatorsReloadedCallback.EVENT.invoker().onValueCalculatorsReloaded(map.keySet());
+    }
+
+    public void replaceWith(Map<ResourceLocation, List<ValueCalculatorInternal>> map) {
+        this.map.clear();
+        this.map.putAll(map);
+        ValueCalculatorsReloadedCallback.EVENT.invoker().onValueCalculatorsReloaded(map.keySet());
+    }
+
+    private Map<ResourceLocation, String> loadFromDataPacks(ResourceManager manager) {
+        var idsToStrings = new HashMap<ResourceLocation, String>();
+
+        manager.listPacks().forEach(pack -> {
+            for (var namespace : pack.getNamespaces(PackType.SERVER_DATA)) {
+                pack.listResources(
+                    PackType.SERVER_DATA,
+                    namespace,
+                    "value_calculators",
+                    (id, input) -> {
+                        // Remove "value_calculators/"
+                        var newId = ResourceLocation.fromNamespaceAndPath(namespace, id.getPath().substring(18, id.getPath().length() - 5));
+                        try {
+                            var json = JsonParser.parseReader(new InputStreamReader(input.get()));
+                            var internal = ValueCalculatorInternal.CODEC
+                                .parse(JsonOps.INSTANCE, json)
+                                .getOrThrow((s) -> {
+                                    throw new RuntimeException(String.format("Failed to parse value calculator: %s, %s", newId, s));
+                                });
+
+                            map.computeIfAbsent(newId, k -> new ArrayList<>()).add(internal);
+                            idsToStrings.putIfAbsent(newId, GSON.toJson(json));
+
+                        } catch (IOException e) {
+                            Gimm1q.LOGGER.error("Failed to load value calculator: {}", newId, e);
+                            throw new RuntimeException(e);
+                        } catch (Exception e) {
+                            Gimm1q.LOGGER.error("Failed to create value calculator: {}", newId, e);
+                            throw new RuntimeException("Failed to create value calculator: " + newId, e);
+                        }
+                    }
+                );
+            }
+        });
+
+        return idsToStrings;
+    }
+
+    private int saveTemplatesToConfigFolder(Map<ResourceLocation, String> idsToStrings) {
+        var count = 0;
+        try {
+            var configFolder = FabricLoader.getInstance().getConfigDir().toFile();
+
+            var namespaces = idsToStrings.keySet().stream().map(ResourceLocation::getNamespace).collect(Collectors.toSet());
+            for (var ns : namespaces) {
+                var directory = configFolder.toPath().resolve(ns + "/value_calculators").toFile();
+                if (directory.exists()) {
+                    deleteExistingTemplateFiles(directory);
+                }
+            }
+
+            for (var id : idsToStrings.keySet()) {
+                var directory = configFolder.toPath().resolve(id.getNamespace() + "/value_calculators").toFile();
+
+                var file = directory.toPath().resolve(id.getPath() + ".template.json").toFile();
+                if (file.getParentFile().mkdirs() || file.createNewFile()) {
+                    count++;
+                    Gimm1q.LOGGER.debug("Created Gimm1q Value Calculator config file {}", file.getAbsolutePath());
+                }
+                var writer = new FileWriter(file, false);
+                //noinspection deprecation
+                writer.write(StringEscapeUtils.unescapeJson(idsToStrings.get(id)));
+                writer.close();
+            }
+        } catch (Throwable e) {
+            Gimm1q.LOGGER.error("Failed to create Gimm1q Value Calculator config folder", e);
+        }
+
+        return count;
+    }
+
+    private static void deleteExistingTemplateFiles(File directory) {
+        var files = directory.listFiles();
+
+        if (files != null) {
+            for (var file : files) {
+                if (file.isFile() && file.getName().endsWith(".template.json")) {
+                    if (!file.delete()) {
+                        Gimm1q.LOGGER.error("Failed to delete Gimm1q Value Calculator config file {}", file.getAbsolutePath());
+                    }
+                } else if (file.isDirectory()) {
+                    deleteExistingTemplateFiles(file);
+                }
+            }
+        }
+    }
+
+    private void loadFromConfigFolder(Set<ResourceLocation> ids) {
+        try {
+            var configFolder = FabricLoader.getInstance().getConfigDir().toFile();
+            if (!configFolder.exists()) {
+                return;
+            }
+
+            for (var id : ids) {
+                var file = configFolder.toPath().resolve(id.getNamespace() + "/value_calculators/" + id.getPath() + ".json").toFile();
+                if (!file.exists()) {
+                    continue;
+                }
+                var internal = ValueCalculatorInternal.CODEC
+                    .parse(JsonOps.INSTANCE, JsonParser.parseReader(new FileReader(file)))
+                    .result();
+                internal.ifPresent(it -> map.computeIfAbsent(id, k -> new ArrayList<>()).add(it));
+            }
+
+        } catch (Throwable e) {
+            Gimm1q.LOGGER.error("Failed to load Gimm1q Value Calculator config folder", e);
+        }
+    }
+
+    public Optional<Double> calculateExpressionOrVariable(
+        ResourceLocation id,
+        String name,
+        ValueCalculatorContext context,
+        boolean variable
+    ) {
+        var list = map.get(id);
+        if (list == null) {
+            if (Gimm1q.debugMessages) {
+                Gimm1q.LOGGER.error("Value Calculator file not found: {}. Defaulting to 0.0", id);
+            }
+            return Optional.empty();
+        }
+
+        for (var i = list.size() - 1; i >= 0; i--) {
+            var it = list.get(i);
+            var exp = variable
+                ? it.tryCalculateVariable(name, context)
+                : it.tryCalculateExpression(name, context);
+            if (exp.isPresent()) {
+                return exp;
+            }
+        }
+        if (Gimm1q.debugMessages) {
+            Gimm1q.LOGGER.error("Value Calculator expression or variable not found: {}.{}. Defaulting to 0.0", id, name);
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Double> calculateExpression(ResourceLocation id, String name, ValueCalculatorContext context) {
+        return calculateExpressionOrVariable(id, name, context, false);
+    }
+
+    public Optional<Double> calculateVariable(ResourceLocation id, String name, ValueCalculatorContext context) {
+        return calculateExpressionOrVariable(id, name, context, true);
+    }
+
+    public static Set<ResourceLocation> getAllIds() {
+        return INSTANCE.map.keySet();
+    }
+
+    public ValueCalculatorSyncS2CPacket createPacket() {
+        return new ValueCalculatorSyncS2CPacket(map);
+    }
+
+    public static Optional<Set<String>> getExpressionOrVariableNames(ResourceLocation id, boolean variables) {
+        var list = INSTANCE.map.get(id);
+        if (list == null) {
+            return Optional.empty();
+        }
+        return Optional.of(list.stream().reduce(
+            new HashSet<>(),
+            (acc, it) -> {
+                acc.addAll(variables ? it.getVariableNames() : it.getExpressionNames());
+                return acc;
+            },
+            (a, b) -> {
+                a.addAll(b);
+                return a;
+            }
+        ));
+    }
+}

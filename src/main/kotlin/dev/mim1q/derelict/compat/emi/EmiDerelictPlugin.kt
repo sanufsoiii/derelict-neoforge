@@ -1,0 +1,37 @@
+package dev.mim1q.derelict.compat.emi
+
+import dev.emi.emi.api.EmiPlugin
+import dev.emi.emi.api.EmiRegistry
+import dev.emi.emi.api.recipe.EmiWorldInteractionRecipe
+import dev.emi.emi.api.stack.EmiStack
+import dev.mim1q.derelict.init.ModBlocksAndItems.AGING_STAFF
+import dev.mim1q.derelict.init.ModBlocksAndItems.WAXING_STAFF
+import dev.mim1q.derelict.item.getFullAgingMap
+import net.minecraft.world.item.HoneycombItem
+import net.minecraft.world.level.ItemLike
+
+object EmiDerelictPlugin : EmiPlugin {
+    override fun register(registry: EmiRegistry) {
+        HoneycombItem.WAXABLES.get()?.forEach {
+            registry.addRecipe(
+                EmiWorldInteractionRecipe.builder()
+                    .leftInput(it.key.emiStack())
+                    .rightInput(EmiStack.of(WAXING_STAFF), true)
+                    .output(it.value.emiStack())
+                    .build()
+            )
+        }
+
+        getFullAgingMap().forEach {
+            registry.addRecipe(
+                EmiWorldInteractionRecipe.builder()
+                    .leftInput(it.key.emiStack())
+                    .rightInput(EmiStack.of(AGING_STAFF), true)
+                    .output(it.value.emiStack())
+                    .build()
+            )
+        }
+    }
+
+    private fun ItemLike.emiStack(): EmiStack = EmiStack.of(this)
+}

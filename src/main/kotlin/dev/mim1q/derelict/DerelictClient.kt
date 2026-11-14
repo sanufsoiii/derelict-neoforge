@@ -1,0 +1,161 @@
+package dev.mim1q.derelict
+
+import com.mojang.blaze3d.systems.RenderSystem
+import dev.mim1q.derelict.Derelict.id
+import dev.mim1q.derelict.client.render.block.SpiderEggClusterRenderer
+import dev.mim1q.derelict.client.render.effect.SpiderWebModelFeature
+import dev.mim1q.derelict.client.render.entity.spider.ArachneEggRenderer
+import dev.mim1q.derelict.config.DerelictClientConfig
+import dev.mim1q.derelict.config.DerelictConfigs
+import dev.mim1q.derelict.init.ModBlocksAndItems
+import dev.mim1q.derelict.init.ModParticles
+import dev.mim1q.derelict.init.ModStatusEffects
+import dev.mim1q.derelict.init.client.ModRender
+import dev.mim1q.derelict.init.component.ModCardinalComponents.getClientSyncedEffectAmplifier
+import dev.mim1q.derelict.init.component.ModCardinalComponents.hasClientSyncedEffect
+import dev.mim1q.derelict.interfaces.AbstractBlockAccessor
+import dev.mim1q.derelict.item.CrosshairTipItem
+import dev.mim1q.derelict.util.BlockMarkerUtils
+import dev.mim1q.derelict.vendor.gimm1q.client.highlight.HighlightDrawerCallback
+import dev.mim1q.derelict.vendor.gimm1q.client.item.handheld.HandheldItemModelRegistry
+import dev.mim1q.derelict.vendor.gimm1q.interpolation.Easing
+import net.fabricmc.api.ClientModInitializer
+import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
+import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.renderer.item.ItemProperties
+import net.minecraft.client.renderer.entity.LivingEntityRenderer
+import net.minecraft.client.model.EntityModel
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.item.Items
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth
+import kotlin.math.sin
+
+object DerelictClient : ClientModInitializer {
+    val CLIENT_CONFIG: DerelictClientConfig = DerelictConfigs.CLIENT_CONFIG
+
+    override fun onInitializeClient() {
+        CLIENT_CONFIG.save()
+
+        ModRender.init()
+        ModParticles.initClient()
+
+        // Disabled for now - it's a bit hard to make a spider filter when there is a spider boss planned ;)
+        // Might figure something out in the future (turn the spiders into robots in the resrouce pack?)
+
+        // ResourceManagerHelper.registerBuiltinResourcePack(
+        //   id("arachnophobia_filter"),
+        //   FabricLoader.getInstance().getModContainer("derelict").get(),
+        //   Text.literal("Arachnophobia Filter"),
+        //   ResourcePackActivationType.NORMAL,
+        // )
+
+        HudRenderCallback.EVENT.register { context, _ ->
+            Minecraft.getInstance().player?.let { player ->
+                listOf(player.mainHandItem.item, player.offhandItem.item)
+            }?.forEach { item ->
+                if (item != null && item is CrosshairTipItem || item == Items.HONEYCOMB) {
+                    BlockMarkerUtils.renderCrosshairTip(context, item as CrosshairTipItem)
+                    return@register
+                }
+            }
+        }
+
+        val hudWebTextures = arrayOf(
+            id("textures/gui/effect/spider_web_gui_sparse.png"),
+            id("textures/gui/effect/spider_web_gui.png"),
+            id("textures/gui/effect/spider_web_gui_dense.png")
+        )
+
+        fun GuiGraphics.drawFullScreenTexture(texture: ResourceLocation, ratio: Float) {
+            val windowWidth = Minecraft.getInstance().window.guiScaledWidth
+            val windowHeight = Minecraft.getInstance().window.guiScaledHeight
+            val isHorizontal = (windowWidth.toFloat() / windowHeight) > ratio
+
+            val width = if (isHorizontal) windowWidth else (windowHeight * ratio).toInt()
+            val height = if (isHorizontal) (windowWidth / ratio).toInt() else windowHeight
+
+            RenderSystem.enableBlend()
+            blit(
+                texture,
+                (windowWidth - width) / 2, (windowHeight - height) / 2,
+                0f, 0f,
+                width, height,
+                width, height
+            )
+        }
+
+        HudRenderCallback.EVENT.register { context, _ ->
+            val player = Minecraft.getInstance().player ?: return@register
+            val camera = Minecraft.getInstance().gameRenderer.mainCamera
+            val world = player.level()
+
+            val light = Easing.lerp(world.getLightLevelDependentMagicValue(camera.blockPosition) + 1 / 16f, 1f, 0.2f)
+
+            RenderSystem.setShaderColor(light, light, light, 1f)
+
+            if (player.hasClientSyncedEffect(ModStatusEffects.COBWEBBED)) {
+                val level =
+                    Mth.clamp(player.getClientSyncedEffectAmplifier(ModStatusEffects.COBWEBBED) ?: 0, 0, 2)
+                context.drawFullScreenTexture(hudWebTextures[level], 16 / 9f)
+            }
+
+            RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
+        }
+
+
+        HighlightDrawerCallback.EVENT.register { drawer, ctx ->
+            val range = CLIENT_CONFIG.waxableAndAgeableHightlightRange()
+            if (range <= 0) return@register
+            val stack = ctx.player.mainHandItem
+
+            val waxing = CLIENT_CONFIG.waxableHighlights()
+                && (stack.`is`(ModBlocksAndItems.WAXING_STAFF) || stack.`is`(Items.HONEYCOMB))
+            val aging = CLIENT_CONFIG.ageableHighlights() && stack.`is`(ModBlocksAndItems.AGING_STAFF)
+
+            if (!aging && !waxing) return@register
+
+            val world = ctx.player.level()
+            val tickDelta = Minecraft.getInstance().timer.getGameTimeDeltaPartialTick(false)
+            val opacity = (sin((world.gameTime + tickDelta) * 0.25F) * 32F + 32F).toInt()
+            val color = (opacity shl 24) or 0xfcad03
+
+            BlockPos.withinManhattan(ctx.player.blockPosition(), range, range, range).forEach {
+                val block = world.getBlockState(it).block as AbstractBlockAccessor
+                if (
+                    (aging && block.isAgeable)
+                    || (waxing && block.isWaxable)
+                ) {
+                    drawer.highlightBlock(it, color, 0x80fcad03.toInt())
+                }
+            }
+        }
+
+        LivingEntityFeatureRendererRegistrationCallback.EVENT.register { _, entityRenderer, registrationHelper, _ ->
+            if (entityRenderer is LivingEntityRenderer) {
+                @Suppress("UNCHECKED_CAST")
+                registrationHelper.register(SpiderWebModelFeature(entityRenderer as LivingEntityRenderer<LivingEntity, EntityModel<LivingEntity>>))
+            }
+        }
+
+        ModelLoadingPlugin.register { ctx ->
+            ctx.addModels(
+                *SpiderEggClusterRenderer.MODEL_IDS,
+                *ArachneEggRenderer.MODEL_IDS
+            )
+        }
+
+        ItemProperties.register(
+            ModBlocksAndItems.ARACHNICANNON,
+            id("targeting")
+        ) { _, _, livingEntity, _ -> if (livingEntity?.isUsingItem == true) 1f else 0f }
+
+        HandheldItemModelRegistry.getInstance().register(
+            ModBlocksAndItems.ARACHNICANNON, id("arachnicannon_hand")
+        )
+    }
+}
