@@ -1,7 +1,6 @@
 package dev.mim1q.derelict.vendor.gimm1q.screenshake;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+
 
 /**
  * Client-side accessor to make a {@link net.minecraft.client.player.LocalPlayer}'s camera shake
@@ -11,7 +10,7 @@ import net.fabricmc.api.Environment;
  * <pre>{@code
  *     var player = MinecraftClient.getInstance().player;
  *     if (player != null) {
- *         ((ScreenShakeAccessor) player).shakeCamera(1.0f, 20);
+ *         ((ScreenShakeAccessor) player).derelictGimm1q$shakeCamera(1.0f, 20);
  *     }
  * }</pre>
  * <p>
@@ -19,7 +18,7 @@ import net.fabricmc.api.Environment;
  * called from the client-side.
  * </p>
  */
-@Environment(EnvType.CLIENT)
+
 public interface ScreenShakeAccessor {
     /**
      * Shakes the player's camera.
@@ -27,5 +26,5 @@ public interface ScreenShakeAccessor {
      * @param intensity The intensity of the shake. 1.0f is a good default value for most non-extreme cases.
      * @param duration  The duration of the shake in ticks.
      */
-    void shakeCamera(float intensity, int duration);
+    void derelictGimm1q$shakeCamera(float intensity, int duration);
 }

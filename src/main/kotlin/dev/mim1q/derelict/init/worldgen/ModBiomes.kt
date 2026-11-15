@@ -1,37 +1,43 @@
 package dev.mim1q.derelict.init.worldgen
 
 import com.mojang.datafixers.util.Pair
+import com.mojang.serialization.MapCodec
+import com.mojang.serialization.codecs.RecordCodecBuilder
 import dev.mim1q.derelict.Derelict
 import dev.mim1q.derelict.init.ModBlocksAndItems
 import dev.mim1q.derelict.init.ModEntities
-import net.fabricmc.fabric.api.biome.v1.BiomeModifications
-import net.fabricmc.fabric.api.biome.v1.ModificationPhase
+import net.minecraft.core.Holder
+import net.minecraft.core.HolderSet
+import net.minecraft.core.Registry
+import net.minecraft.core.registries.Registries
+import net.minecraft.resources.ResourceKey
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.entity.MobCategory
-import net.minecraft.core.Registry
-import net.minecraft.resources.ResourceKey
-import net.minecraft.core.registries.Registries
 import net.minecraft.world.level.biome.Biome
 import net.minecraft.world.level.biome.Biomes
-import net.minecraft.world.level.biome.MobSpawnSettings
 import net.minecraft.world.level.biome.Climate
-import net.minecraft.world.level.biome.Climate.ParameterPoint
 import net.minecraft.world.level.biome.Climate.Parameter
+import net.minecraft.world.level.biome.Climate.ParameterPoint
+import net.minecraft.world.level.biome.MobSpawnSettings
 import net.minecraft.world.level.levelgen.SurfaceRules
-import net.minecraft.world.level.levelgen.SurfaceRules.state
 import net.minecraft.world.level.levelgen.SurfaceRules.ifTrue
-import terrablender.api.*
+import net.minecraft.world.level.levelgen.SurfaceRules.state
+import net.neoforged.neoforge.common.world.BiomeModifier
+import net.neoforged.neoforge.common.world.ModifiableBiomeInfo
 import terrablender.api.ParameterUtils.*
+import terrablender.api.Region
+import terrablender.api.RegionType
+import terrablender.api.Regions
+import terrablender.api.SurfaceRuleManager
 import java.util.function.Consumer
 
-object ModBiomes : TerraBlenderApi {
+object ModBiomes {
     private val SPIDER_CAVES = biomeKey("spider_caves")
     private val DERELICT_REGION = object : Region(Derelict.id("derelict"), RegionType.OVERWORLD, 1) {
         override fun addBiomes(
             registry: Registry<Biome>,
             mapper: Consumer<Pair<ParameterPoint, ResourceKey<Biome>>>
         ) {
-
             val spiderCavesPoints = ParameterPointListBuilder()
                 .temperature(Temperature.FULL_RANGE)
                 .humidity(Humidity.WET, Humidity.HUMID, Humidity.ARID)
@@ -48,7 +54,8 @@ object ModBiomes : TerraBlenderApi {
         }
     }
 
-    override fun onTerraBlenderInitialized() {
+    /** Called from FMLCommonSetupEvent (TerraBlender on NeoForge requires this phase). */
+    fun init() {
         Regions.register(DERELICT_REGION)
 
         SurfaceRuleManager.addSurfaceRules(
@@ -59,51 +66,6 @@ object ModBiomes : TerraBlenderApi {
                 state(ModBlocksAndItems.ARACHNITE.block.defaultBlockState())
             )
         )
-
-        BiomeModifications.create(Derelict.id("add_jumping_spiders"))
-            .add(
-                ModificationPhase.ADDITIONS,
-                { selection ->
-                    selection.biome.mobSettings.getMobs(MobCategory.MONSTER).unwrap()
-                        .any { it.type == EntityType.SPIDER }
-                },
-                { _, modification ->
-                    modification.spawnSettings.addSpawn(
-                        MobCategory.MONSTER,
-                        MobSpawnSettings.SpawnerData(
-                            ModEntities.JUMPING_SPIDER, 30, 1, 2
-                        )
-                    )
-                }
-            )
-
-        BiomeModifications.create(Derelict.id("add_spiny_spiders"))
-            .add(
-                ModificationPhase.ADDITIONS,
-                { selection -> selection.biomeKey == Biomes.CRIMSON_FOREST },
-                { _, modification ->
-                    modification.spawnSettings.addSpawn(
-                        MobCategory.MONSTER,
-                        MobSpawnSettings.SpawnerData(
-                            ModEntities.SPINY_SPIDER, 15, 1, 2
-                        )
-                    )
-                }
-            )
-
-        BiomeModifications.create(Derelict.id("add_charming_spiders"))
-            .add(
-                ModificationPhase.ADDITIONS,
-                { selection -> selection.biomeKey == Biomes.WARPED_FOREST },
-                { _, modification ->
-                    modification.spawnSettings.addSpawn(
-                        MobCategory.MONSTER,
-                        MobSpawnSettings.SpawnerData(
-                            ModEntities.CHARMING_SPIDER, 15, 1, 2
-                        )
-                    )
-                }
-            )
     }
 
     private fun noiseParameters(
@@ -125,4 +87,37 @@ object ModBiomes : TerraBlenderApi {
     )
 
     private fun biomeKey(name: String): ResourceKey<Biome> = ResourceKey.create(Registries.BIOME, Derelict.id(name))
+}
+
+/**
+ * Fabric: BiomeModifications selector "a vanilla spider is already in the MONSTER spawn list".
+ * NeoForge biome modifiers cannot express that as a biome tag, so this modifier checks the spawn list itself.
+ * Applied by data/derelict/neoforge/biome_modifier/add_jumping_spiders_*.json.
+ */
+class AddJumpingSpidersBiomeModifier(private val biomes: HolderSet<Biome>) : BiomeModifier {
+    override fun modify(
+        biome: Holder<Biome>,
+        phase: BiomeModifier.Phase,
+        builder: ModifiableBiomeInfo.BiomeInfo.Builder
+    ) {
+        if (phase != BiomeModifier.Phase.ADD || !biomes.contains(biome)) return
+        val hasVanillaSpider = builder.mobSpawnSettings.getSpawner(MobCategory.MONSTER)
+            .any { it.type == EntityType.SPIDER }
+        if (hasVanillaSpider) {
+            builder.mobSpawnSettings.addSpawn(
+                MobCategory.MONSTER,
+                MobSpawnSettings.SpawnerData(ModEntities.JUMPING_SPIDER, 30, 1, 2)
+            )
+        }
+    }
+
+    override fun codec(): MapCodec<out BiomeModifier> = CODEC
+
+    companion object {
+        val CODEC: MapCodec<AddJumpingSpidersBiomeModifier> = RecordCodecBuilder.mapCodec { instance ->
+            instance.group(
+                Biome.LIST_CODEC.fieldOf("biomes").forGetter(AddJumpingSpidersBiomeModifier::biomes)
+            ).apply(instance) { biomes -> AddJumpingSpidersBiomeModifier(biomes) }
+        }
+    }
 }

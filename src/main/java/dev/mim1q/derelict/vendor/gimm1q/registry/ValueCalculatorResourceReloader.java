@@ -2,6 +2,7 @@ package dev.mim1q.derelict.vendor.gimm1q.registry;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
 import dev.mim1q.derelict.vendor.gimm1q.Gimm1q;
@@ -9,8 +10,8 @@ import dev.mim1q.derelict.vendor.gimm1q.network.s2c.ValueCalculatorSyncS2CPacket
 import dev.mim1q.derelict.vendor.gimm1q.valuecalculators.ValueCalculatorsReloadedCallback;
 import dev.mim1q.derelict.vendor.gimm1q.valuecalculators.internal.ValueCalculatorInternal;
 import dev.mim1q.derelict.vendor.gimm1q.valuecalculators.parameters.ValueCalculatorContext;
-import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
-import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
+import net.neoforged.fml.loading.FMLPaths;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -21,7 +22,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-public class ValueCalculatorResourceReloader implements SimpleSynchronousResourceReloadListener {
+public class ValueCalculatorResourceReloader implements ResourceManagerReloadListener {
     private ValueCalculatorResourceReloader() {
     }
 
@@ -32,8 +33,8 @@ public class ValueCalculatorResourceReloader implements SimpleSynchronousResourc
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     @Override
-    public ResourceLocation getFabricId() {
-        return ID;
+    public String getName() {
+        return ID.toString();
     }
 
     @Override
@@ -96,7 +97,7 @@ public class ValueCalculatorResourceReloader implements SimpleSynchronousResourc
     private int saveTemplatesToConfigFolder(Map<ResourceLocation, String> idsToStrings) {
         var count = 0;
         try {
-            var configFolder = FabricLoader.getInstance().getConfigDir().toFile();
+            var configFolder = FMLPaths.CONFIGDIR.get().toFile();
 
             var namespaces = idsToStrings.keySet().stream().map(ResourceLocation::getNamespace).collect(Collectors.toSet());
             for (var ns : namespaces) {
@@ -144,7 +145,7 @@ public class ValueCalculatorResourceReloader implements SimpleSynchronousResourc
 
     private void loadFromConfigFolder(Set<ResourceLocation> ids) {
         try {
-            var configFolder = FabricLoader.getInstance().getConfigDir().toFile();
+            var configFolder = FMLPaths.CONFIGDIR.get().toFile();
             if (!configFolder.exists()) {
                 return;
             }

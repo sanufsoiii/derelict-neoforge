@@ -1,0 +1,4 @@
+{
+  "type": "derelict:add_jumping_spiders",
+  "biomes": "#minecraft:is_nether"
+}

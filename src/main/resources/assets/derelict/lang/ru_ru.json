@@ -1,10 +1,18 @@
 {
-  "itemGroup.derelict.derelict": [{ "text": "Derelict", "color": "#F2A6FF" }],
-  "itemGroup.derelict.derelict.tab.general": [{ "text": "General Items & Blocks", "color": "#F2A6FF" }],
-
+  "itemGroup.derelict.derelict": [
+    {
+      "text": "Derelict",
+      "color": "#F2A6FF"
+    }
+  ],
+  "itemGroup.derelict.derelict.tab.general": [
+    {
+      "text": "General Items & Blocks",
+      "color": "#F2A6FF"
+    }
+  ],
   "item.derelict.aging_staff": "Трость старения",
   "item.derelict.waxing_staff": "Посох вощения",
-
   "block.derelict.burned_planks": "Обгоревшие доски",
   "block.derelict.burned_log": "Обгоревшее бревно",
   "block.derelict.stripped_burned_log": "Обтёсанное обгоревшее бревно",
@@ -163,5 +171,16 @@
   "block.derelict.waxed_oxidized_noctisteel_patch": "Вощёная окисленная темностальная обшивка",
   "block.derelict.waxed_oxidized_noctisteel_sheet": "Вощёный окисленный лист темностали",
   "block.derelict.waxed_oxidized_noctisteel_chain_link_fence": "Вощёное окисленное темностальное сетчатое ограждение",
-  "block.derelict.waxed_oxidized_noctisteel_barbed_wire": "Вощёная окисленная темностальная колючая проволока"
+  "block.derelict.waxed_oxidized_noctisteel_barbed_wire": "Вощёная окисленная темностальная колючая проволока",
+  "derelict.port.assets.title": "Оригинальные ассеты Derelict",
+  "derelict.port.assets.text": "Этот неофициальный порт для NeoForge не содержит оригинальные текстуры и модели: права на них принадлежат Mim1q (All Rights Reserved). Скачайте оригинальный jar Derelict 2.1.0 для 1.21.1 и положите его в папку resourcepacks — порт подключит его ассеты автоматически. Без него блоки и мобы будут выглядеть как отсутствующие текстуры.",
+  "derelict.port.assets.button.curseforge": "Открыть страницу CurseForge",
+  "derelict.port.assets.button.modrinth": "Открыть страницу Modrinth",
+  "derelict.port.assets.button.open_folder": "Открыть папку resourcepacks",
+  "derelict.port.assets.button.check_again": "Проверить снова",
+  "derelict.port.assets.button.continue": "Продолжить",
+  "derelict.port.assets.dont_show_again": "Больше не показывать",
+  "derelict.port.assets.not_found": "Jar не найден в папке resourcepacks.",
+  "derelict.port.assets.pack_name": "Оригинальные ассеты Derelict",
+  "derelict.port.assets.pack_description": "Текстуры и модели из оригинального jar Derelict (%s)"
 }

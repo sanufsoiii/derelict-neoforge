@@ -1,11 +1,11 @@
 package dev.mim1q.derelict.item
 
-import dev.mim1q.derelict.DerelictClient
+import dev.mim1q.derelict.config.DerelictConfigs
 import dev.mim1q.derelict.block.flickering.FlickeringBlock
 import dev.mim1q.derelict.init.ModBlocksAndItems
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.WeatheringCopper
-import net.minecraft.world.item.HoneycombItem
+import net.neoforged.neoforge.common.DataMapHooks
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.context.UseOnContext
 import net.minecraft.core.particles.ParticleOptions
@@ -60,16 +60,16 @@ sealed class StaffItem(settings: Item.Properties) : Item(settings), CrosshairTip
 
         override fun getBlockConversion(block: Block): Block? = firstNonNull(
             { ModBlocksAndItems.BLOCK_AGING_MAP[block] },
-            { WeatheringCopper.getNext(block).orElse(null) },
+            { DataMapHooks.getNextOxidizedStage(block) },
             {
-                HoneycombItem.WAX_OFF_BY_BLOCK.get()[block]
-                    ?.let { WeatheringCopper.getNext(it).orElse(null) }
-                    ?.let { HoneycombItem.WAXABLES.get()[it] }
+                DataMapHooks.getBlockUnwaxed(block)
+                    ?.let { DataMapHooks.getNextOxidizedStage(it) }
+                    ?.let { DataMapHooks.getBlockWaxed(it) }
             }
         )
 
         override fun shouldShowTip(block: Block?) =
-            DerelictClient.CLIENT_CONFIG.ageableCrosshairTip() && super.shouldShowTip(block)
+            DerelictConfigs.CLIENT_CONFIG.ageableCrosshairTip() && super.shouldShowTip(block)
     }
 
     class Waxing(settings: Item.Properties) : StaffItem(settings) {
@@ -77,12 +77,10 @@ sealed class StaffItem(settings: Item.Properties) : Item(settings), CrosshairTip
         override val particle: ParticleOptions = ParticleTypes.WAX_ON
         override val sound: SoundEvent = SoundEvents.HONEYCOMB_WAX_ON
 
-        override fun getBlockConversion(block: Block): Block? = firstNonNull(
-            { HoneycombItem.WAXABLES.get()[block] }
-        )
+        override fun getBlockConversion(block: Block): Block? = DataMapHooks.getBlockWaxed(block)
 
         override fun shouldShowTip(block: Block?) =
-            DerelictClient.CLIENT_CONFIG.waxableCrosshairTip() && super.shouldShowTip(block)
+            DerelictConfigs.CLIENT_CONFIG.waxableCrosshairTip() && super.shouldShowTip(block)
     }
 
     protected fun firstNonNull(vararg suppliers: () -> Block?): Block? {
@@ -100,10 +98,10 @@ fun getFullAgingMap(): Map<Block, Block> {
     WeatheringCopper.NEXT_BY_BLOCK.get().forEach { (from, to) ->
         map[from] = to
     }
-    HoneycombItem.WAXABLES.get().forEach { (from, to) ->
-        val aged = WeatheringCopper.getNext(to).orElse(null)
-        val agedWaxed = HoneycombItem.WAXABLES.get()[aged]
-        if (agedWaxed != null) map[from] = agedWaxed
+    DataMapHooks.INVERSE_WAXABLES_DATAMAP.forEach { (waxed, unwaxed) ->
+        val aged = DataMapHooks.getNextOxidizedStage(unwaxed) ?: return@forEach
+        val agedWaxed = DataMapHooks.getBlockWaxed(aged) ?: return@forEach
+        map[waxed] = agedWaxed
     }
 
     return map

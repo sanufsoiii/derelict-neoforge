@@ -13,7 +13,7 @@ public record CameraShakeS2CPacket(
     int duration,
     String modifierName
 ) implements CustomPacketPayload {
-    public static final Type<CameraShakeS2CPacket> ID = new Type<>(Gimm1q.id("camera_shake"));
+    public static final Type<CameraShakeS2CPacket> ID = new Type<>(Gimm1q.registeredId("camera_shake"));
     public static final StreamCodec<RegistryFriendlyByteBuf, CameraShakeS2CPacket> CODEC = StreamCodec.composite(
         ByteBufCodecs.FLOAT, CameraShakeS2CPacket::intensity,
         ByteBufCodecs.INT, CameraShakeS2CPacket::duration,

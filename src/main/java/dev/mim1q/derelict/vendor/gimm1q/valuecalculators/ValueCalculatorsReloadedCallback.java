@@ -1,7 +1,7 @@
 package dev.mim1q.derelict.vendor.gimm1q.valuecalculators;
 
-import net.fabricmc.fabric.api.event.Event;
-import net.fabricmc.fabric.api.event.EventFactory;
+import dev.mim1q.derelict.vendor.gimm1q.event.Event;
+import dev.mim1q.derelict.vendor.gimm1q.event.EventFactory;
 import net.minecraft.resources.ResourceLocation;
 import java.util.Set;
 

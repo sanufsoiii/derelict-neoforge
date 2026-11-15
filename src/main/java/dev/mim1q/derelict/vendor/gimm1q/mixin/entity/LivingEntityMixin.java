@@ -23,7 +23,7 @@ public abstract class LivingEntityMixin {
     public abstract ItemStack getUseItem();
 
     @Unique
-    private boolean gimm1q$preventRemovingCurrentEffect = false;
+    private boolean derelictGimm1q$preventRemovingCurrentEffect = false;
 
     @WrapOperation(
         method = "removeAllEffects",
@@ -32,13 +32,13 @@ public abstract class LivingEntityMixin {
             target = "Lnet/minecraft/world/entity/LivingEntity;onEffectRemoved(Lnet/minecraft/world/effect/MobEffectInstance;)V"
         )
     )
-    private void gimm1q$wrapOnStatusEffectRemoved(LivingEntity instance, MobEffectInstance effect, Operation<Void> original) {
+    private void derelictGimm1q$wrapOnStatusEffectRemoved(LivingEntity instance, MobEffectInstance effect, Operation<Void> original) {
         if (
             getUseItem().is(Items.MILK_BUCKET)
             && effect.getEffect() instanceof ExtendedStatusEffect extendedEffect
             && !extendedEffect.canBeCuredWithMilk()
         ) {
-            gimm1q$preventRemovingCurrentEffect = true;
+            derelictGimm1q$preventRemovingCurrentEffect = true;
             return;
         }
         original.call(instance, effect);
@@ -51,9 +51,9 @@ public abstract class LivingEntityMixin {
             target = "Ljava/util/Iterator;remove()V"
         )
     )
-    private boolean gimm1q$wrapIteratorRemoveWithConditionInClearStatusEffects(Iterator<MobEffectInstance> instance) {
-        if (gimm1q$preventRemovingCurrentEffect) {
-            gimm1q$preventRemovingCurrentEffect = false;
+    private boolean derelictGimm1q$wrapIteratorRemoveWithConditionInClearStatusEffects(Iterator<MobEffectInstance> instance) {
+        if (derelictGimm1q$preventRemovingCurrentEffect) {
+            derelictGimm1q$preventRemovingCurrentEffect = false;
             return false;
         }
         return true;

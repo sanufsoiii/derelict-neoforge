@@ -21,10 +21,8 @@ import dev.mim1q.derelict.item.weapon.Arachnicannon
 import dev.mim1q.derelict.item.weapon.SpiderSilkBola
 import dev.mim1q.derelict.item.weapon.Wildfire
 import dev.mim1q.derelict.util.extensions.getNbt
-import net.fabricmc.fabric.mixin.`object`.builder.AbstractBlockSettingsAccessor
 import net.minecraft.world.item.ArmorItem
 import net.minecraft.world.item.BlockItem
-import net.minecraft.world.item.HoneycombItem
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
@@ -36,7 +34,6 @@ import net.minecraft.world.level.block.LanternBlock
 import net.minecraft.world.level.block.LeavesBlock
 import net.minecraft.world.level.block.MultifaceBlock
 import net.minecraft.world.level.block.MultifaceSpreader
-import net.minecraft.world.level.block.WeatheringCopper
 import net.minecraft.world.level.block.state.BlockBehaviour
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.state.BlockBehaviour.OffsetFunction
@@ -48,9 +45,12 @@ import net.minecraft.world.entity.MobSpawnType
 import net.minecraft.world.entity.Mob
 
 import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.resources.ResourceKey
 import net.minecraft.core.Registry
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.level.block.SoundType
+import net.neoforged.neoforge.common.DataMapHooks
+import net.neoforged.neoforge.registries.datamaps.builtin.NeoForgeDataMaps
 import net.minecraft.sounds.SoundSource
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.InteractionResult
@@ -145,12 +145,12 @@ object ModBlocksAndItems {
     val SPIDER_MOLT = register("spider_molt", SpiderMoltBlock(Properties.ofFullCopy(Blocks.MUD).noOcclusion()))
 
     val ARACHNITE =
-        StoneSet(Derelict.id("arachnite"), Properties.ofFullCopy(Blocks.STONE).sound(SoundType.MUD)).register()
+        StoneSet(Derelict.id("arachnite")) { Properties.ofFullCopy(Blocks.STONE).sound(SoundType.MUD) }.register()
 
     val NOCTISTEEL = MetalSet.ThreeLevelOxidizable(
         Derelict.id("noctisteel"),
         defaultItemSettings(),
-        Properties.ofFullCopy(Blocks.IRON_BLOCK).strength(2.0f, 1200f).noOcclusion()
+        { Properties.ofFullCopy(Blocks.IRON_BLOCK).strength(2.0f, 1200f).noOcclusion() }
     ).register()
 
     val SPIDERLING_IN_A_BUCKET = registerItem("spiderling_in_a_bucket", object : Item(defaultItemSettings().stacksTo(1)) {
@@ -236,24 +236,56 @@ object ModBlocksAndItems {
 
     fun init() {}
 
+    private fun oxidationKey(block: Block): ResourceKey<Block>? =
+        BuiltInRegistries.BLOCK.getResourceKey(block).orElse(null)
+
     fun setupWaxableAndAgeable() {
         lastWaxable.forEach { (it as AbstractBlockAccessor).isWaxable = false }
         lastAgeable.forEach { (it as AbstractBlockAccessor).isAgeable = false }
+        lastWaxable.clear()
+        lastAgeable.clear()
         BLOCK_AGING_MAP.forEach { (from, _) ->
             (from as AbstractBlockAccessor).isAgeable = true
             lastAgeable.add(from)
         }
-        HoneycombItem.WAXABLES.get().forEach { (from, _) ->
-            (from as AbstractBlockAccessor).isWaxable = true
-            lastWaxable.add(from)
+        // NeoForge keeps copper-like conversions, including modded pairs, in data maps.
+        // The data maps are empty until the data packs are loaded, so this runs again on DataMapsUpdatedEvent.
+        val waxables = BuiltInRegistries.BLOCK.getDataMap(NeoForgeDataMaps.WAXABLES)
+        waxables.forEach { (key, _) ->
+            val block = BuiltInRegistries.BLOCK.get(key) ?: return@forEach
+            (block as AbstractBlockAccessor).isWaxable = true
+            lastWaxable.add(block)
         }
-        WeatheringCopper.NEXT_BY_BLOCK.get().forEach { (from, _) ->
-            (from as AbstractBlockAccessor).isAgeable = true
-            lastAgeable.add(from)
+        val oxidizables = BuiltInRegistries.BLOCK.getDataMap(NeoForgeDataMaps.OXIDIZABLES)
+        oxidizables.forEach { (key, _) ->
+            val block = BuiltInRegistries.BLOCK.get(key) ?: return@forEach
+            (block as AbstractBlockAccessor).isAgeable = true
+            lastAgeable.add(block)
         }
-        HoneycombItem.WAX_OFF_BY_BLOCK.get().forEach { (from, to) ->
-            if (WeatheringCopper.NEXT_BY_BLOCK.get().containsKey(to))
+        DataMapHooks.INVERSE_WAXABLES_DATAMAP.forEach { (from, to) ->
+            if (oxidationKey(to)?.let { oxidizables.containsKey(it) } == true) {
                 (from as AbstractBlockAccessor).isAgeable = true
+                lastAgeable.add(from)
+            }
+        }
+    }
+
+    /**
+     * Catches a drift between the Kotlin metal sets and the data map JSON instead of silently losing pairs.
+     * Must run only after the data packs are loaded (DataMapsUpdatedEvent), never during registration.
+     */
+    fun verifyDataMaps() {
+        val waxables = BuiltInRegistries.BLOCK.getDataMap(NeoForgeDataMaps.WAXABLES)
+        val oxidizables = BuiltInRegistries.BLOCK.getDataMap(NeoForgeDataMaps.OXIDIZABLES)
+        MetalSet.EXPECTED_OXIDIZABLE_PAIRS.forEach { (from, to) ->
+            if (oxidationKey(from)?.let { oxidizables[it]?.nextOxidationStage() } != to) {
+                Derelict.LOGGER.warn("Missing oxidizable data map entry: {} -> {}", from, to)
+            }
+        }
+        MetalSet.EXPECTED_WAXABLE_PAIRS.forEach { (from, to) ->
+            if (oxidationKey(from)?.let { waxables[it]?.waxed() } != to) {
+                Derelict.LOGGER.warn("Missing waxable data map entry: {} -> {}", from, to)
+            }
         }
     }
 
@@ -311,7 +343,8 @@ object NoZFightingOffsetter : OffsetFunction {
 
 @Suppress("UnstableApiUsage")
 fun <T : BlockBehaviour.Properties> T.noZFighting(): T {
-    (this as AbstractBlockSettingsAccessor).offsetter = NoZFightingOffsetter
-    this.dynamicBounds = true
+    // Access transformer opened BlockBehaviour$Properties.offsetFunction / dynamicShape.
+    this.offsetFunction = NoZFightingOffsetter
+    this.dynamicShape = true
     return this
 }

@@ -1,13 +1,12 @@
 package dev.mim1q.derelict.vendor.gimm1q.client.highlight.gui;
 
+
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.ApiStatus;
 
 @ApiStatus.Internal
-@Environment(EnvType.CLIENT)
+
 public class GuiHighlightDrawerImpl implements GuiHighlightDrawer {
     public static final GuiHighlightDrawerImpl INSTANCE = new GuiHighlightDrawerImpl();
     private GuiHighlightDrawerContext context = null;

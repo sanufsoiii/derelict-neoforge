@@ -1,5 +1,6 @@
 package dev.mim1q.derelict.entity.projectile
 
+import dev.mim1q.derelict.init.ModBlocksAndItems
 import dev.mim1q.derelict.init.ModStatusEffects
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.entity.EntityType
@@ -78,5 +79,7 @@ class SpiderSilkBolaProjectile(
 
     }
 
-    override fun getDefaultPickupItem(): ItemStack = ItemStack.EMPTY
+    // AbstractArrow#addAdditionalSaveData always writes this stack; an empty one throws on 1.21.1.
+    // Pickup stays DISALLOWED, so this only supplies a valid NBT value.
+    override fun getDefaultPickupItem(): ItemStack = ItemStack(ModBlocksAndItems.SPIDER_SILK_BOLA)
 }

@@ -20,33 +20,33 @@ import net.minecraft.world.entity.LivingEntity;
 public class EntityModelMixin<T extends Entity> implements EntityModelVertexConsumerOverrideAccessor {
     @Unique
     @Nullable
-    private BiFunction<LivingEntity, MultiBufferSource, ModelOverlayVertexConsumer> gimm1q$consumerOverride = null;
+    private BiFunction<LivingEntity, MultiBufferSource, ModelOverlayVertexConsumer> derelictGimm1q$consumerOverride = null;
 
     @Unique
     @Nullable
-    private LivingEntity gimm1q$lastModelEntity = null;
+    private LivingEntity derelictGimm1q$lastModelEntity = null;
 
     @Override
-    public void gimm1q$setConsumerOverride(
+    public void derelictGimm1q$setConsumerOverride(
         BiFunction<LivingEntity, MultiBufferSource, ModelOverlayVertexConsumer> vertexConsumerPicker,
-        LivingEntity gimm1q$lastModelEntity
+        LivingEntity derelictGimm1q$lastModelEntity
     ) {
-        this.gimm1q$consumerOverride = vertexConsumerPicker;
-        this.gimm1q$lastModelEntity = gimm1q$lastModelEntity;
+        this.derelictGimm1q$consumerOverride = vertexConsumerPicker;
+        this.derelictGimm1q$lastModelEntity = derelictGimm1q$lastModelEntity;
     }
 
     @Override
     @Nullable
-    public VertexConsumer gimm1q$getConsumerOverride(MultiBufferSource vertexConsumerProvider) {
-        if (gimm1q$consumerOverride == null || gimm1q$lastModelEntity == null) return null;
-        return gimm1q$consumerOverride.apply(gimm1q$lastModelEntity, vertexConsumerProvider);
+    public VertexConsumer derelictGimm1q$getConsumerOverride(MultiBufferSource vertexConsumerProvider) {
+        if (derelictGimm1q$consumerOverride == null || derelictGimm1q$lastModelEntity == null) return null;
+        return derelictGimm1q$consumerOverride.apply(derelictGimm1q$lastModelEntity, vertexConsumerProvider);
     }
 
     @Inject(
         method = "copyPropertiesTo",
         at = @At("HEAD")
     )
-    private void gimm1q$copyStateTo(EntityModel<T> copy, CallbackInfo ci) {
-        ((EntityModelVertexConsumerOverrideAccessor) copy).gimm1q$setConsumerOverride(gimm1q$consumerOverride, gimm1q$lastModelEntity);
+    private void derelictGimm1q$copyStateTo(EntityModel<T> copy, CallbackInfo ci) {
+        ((EntityModelVertexConsumerOverrideAccessor) copy).derelictGimm1q$setConsumerOverride(derelictGimm1q$consumerOverride, derelictGimm1q$lastModelEntity);
     }
 }

@@ -13,7 +13,6 @@ import dev.mim1q.derelict.block.metal.oxidizable.OxidizableGrateBlock
 import dev.mim1q.derelict.block.metal.oxidizable.OxidizableTrapdoorBlock
 import dev.mim1q.derelict.init.ModBlocksAndItems.ItemCategory
 import dev.mim1q.derelict.init.noZFighting
-import net.fabricmc.fabric.api.registry.OxidizableBlocksRegistry
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.ChainBlock
 import net.minecraft.world.level.block.IronBarsBlock
@@ -34,7 +33,7 @@ import net.minecraft.resources.ResourceLocation
 sealed class MetalSet(
     id: ResourceLocation,
     defaultItemSettings: Item.Properties,
-    defaultBlockSettings: BlockBehaviour.Properties
+    defaultBlockSettings: () -> BlockBehaviour.Properties
 ) : FeatureSet(id, defaultItemSettings, defaultBlockSettings) {
     abstract val block: Block
     abstract val cut: Block
@@ -58,7 +57,7 @@ sealed class MetalSet(
     class Regular(
         id: ResourceLocation,
         defaultItemSettings: Item.Properties,
-        defaultBlockSettings: BlockBehaviour.Properties,
+        defaultBlockSettings: () -> BlockBehaviour.Properties,
         prefix: String = ""
     ) : MetalSet(id, defaultItemSettings, defaultBlockSettings) {
         override val block: Block = registerBlockWithItem(
@@ -134,7 +133,7 @@ sealed class MetalSet(
         id: ResourceLocation,
         prefix: String,
         defaultItemSettings: Item.Properties,
-        defaultBlockSettings: BlockBehaviour.Properties,
+        defaultBlockSettings: () -> BlockBehaviour.Properties,
         level: WeatherState
     ) : MetalSet(id, defaultItemSettings, defaultBlockSettings) {
         override val block: Block = registerBlockWithItem(
@@ -209,10 +208,12 @@ sealed class MetalSet(
         )
 
         private fun registerOxidizable(base: Block, moreOxidized: Block?, waxed: Block) {
+            // On NeoForge the actual pairs are data maps (data/neoforge/data_maps/block/*.json);
+            // the expected pairs are kept here and verified against the loaded data maps.
             if (moreOxidized != null) {
-                OxidizableBlocksRegistry.registerOxidizableBlockPair(base, moreOxidized)
+                EXPECTED_OXIDIZABLE_PAIRS[base] = moreOxidized
             }
-            OxidizableBlocksRegistry.registerWaxableBlockPair(base, waxed)
+            EXPECTED_WAXABLE_PAIRS[base] = waxed
         }
 
         fun register(moreOxidizedSet: MetalSet?, waxedSet: MetalSet): Oxidized {
@@ -237,7 +238,7 @@ sealed class MetalSet(
     class ThreeLevelOxidizable(
         id: ResourceLocation,
         defaultItemSettings: Item.Properties,
-        defaultBlockSettings: BlockBehaviour.Properties
+        defaultBlockSettings: () -> BlockBehaviour.Properties
     ) : FeatureSet(id, defaultItemSettings, defaultBlockSettings) {
         val waxedUnaffected = Regular(id, defaultItemSettings, defaultBlockSettings, "waxed_")
         val waxedWeathered = Regular(id, defaultItemSettings, defaultBlockSettings, "waxed_weathered_")
@@ -257,5 +258,13 @@ sealed class MetalSet(
             oxidized.register(null, waxedOxidized)
             return this
         }
+    }
+
+    companion object {
+        /** Expected oxidizable pairs; checked against the loaded data map in ModBlocksAndItems. */
+        val EXPECTED_OXIDIZABLE_PAIRS: MutableMap<Block, Block> = mutableMapOf()
+
+        /** Expected waxable pairs; checked against the loaded data map in ModBlocksAndItems. */
+        val EXPECTED_WAXABLE_PAIRS: MutableMap<Block, Block> = mutableMapOf()
     }
 }

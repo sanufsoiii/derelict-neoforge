@@ -10,9 +10,10 @@ import net.minecraft.client.renderer.entity.EntityRenderer
 import net.minecraft.client.renderer.entity.EntityRendererProvider
 import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.resources.ResourceLocation
+import net.minecraft.client.resources.model.ModelResourceLocation
 
 class SpiderEggProjectileRenderer(ctx: EntityRendererProvider.Context) : EntityRenderer<SpiderEggProjectile>(ctx) {
-    val model = ctx.modelManager.getModel(Derelict.id("block/spider_egg/huge_spider_egg"))
+    val model = ctx.modelManager.getModel(ModelResourceLocation.standalone(Derelict.id("block/spider_egg/huge_spider_egg")))
 
     override fun render(
         entity: SpiderEggProjectile,

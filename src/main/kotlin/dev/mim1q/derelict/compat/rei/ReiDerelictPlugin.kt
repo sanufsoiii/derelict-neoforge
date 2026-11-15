@@ -17,14 +17,15 @@ import me.shedaniel.rei.api.common.display.basic.BasicDisplay
 import me.shedaniel.rei.api.common.entry.EntryIngredient
 import me.shedaniel.rei.api.common.entry.EntryStack
 import me.shedaniel.rei.api.common.util.EntryStacks
+import me.shedaniel.rei.forge.REIPluginClient
 import me.shedaniel.rei.plugin.client.DefaultClientPlugin
-import net.minecraft.world.level.ItemLike
-import net.minecraft.world.item.ItemStack
 import net.minecraft.network.chat.Component
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.ItemLike
 
-object ReiDerelictPlugin : REIClientPlugin {
-    val AGING_CATEGORY_ID: CategoryIdentifier<DefaultAgingDisplay> = CategoryIdentifier.of(Derelict.id("aging"))
-
+/** NeoForge REI discovers plugins by annotation and instantiates them, hence a class, not an object. */
+@REIPluginClient
+class ReiDerelictPlugin : REIClientPlugin {
     @Suppress("UnstableApiUsage")
     override fun registerCategories(registry: CategoryRegistry) {
         registry.add(AgingCategory)
@@ -74,5 +75,9 @@ object ReiDerelictPlugin : REIClientPlugin {
         }
 
         override fun getDisplayHeight() = 36
+    }
+
+    companion object {
+        val AGING_CATEGORY_ID: CategoryIdentifier<DefaultAgingDisplay> = CategoryIdentifier.of(Derelict.id("aging"))
     }
 }

@@ -1,11 +1,11 @@
 package dev.mim1q.derelict.vendor.gimm1q.client.highlight;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * API for drawing highlights around blocks, entities or arbitrary boxes. Should only be used when provided by
@@ -13,7 +13,7 @@ import net.minecraft.world.phys.AABB;
  *
  * @see HighlightDrawerCallback
  */
-@Environment(EnvType.CLIENT)
+
 public interface HighlightDrawer {
     /**
      * Draws a highlight around the given Box.

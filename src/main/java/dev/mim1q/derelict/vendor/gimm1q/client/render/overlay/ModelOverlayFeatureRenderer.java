@@ -51,7 +51,7 @@ public class ModelOverlayFeatureRenderer<E extends LivingEntity, M extends Entit
     ) {
         if (!predicate.test(entity)) {
             if (affectsFeatures) {
-                ((EntityModelVertexConsumerOverrideAccessor) getParentModel()).gimm1q$setConsumerOverride(null, null);
+                ((EntityModelVertexConsumerOverrideAccessor) getParentModel()).derelictGimm1q$setConsumerOverride(null, null);
             }
             return;
         }
@@ -60,7 +60,7 @@ public class ModelOverlayFeatureRenderer<E extends LivingEntity, M extends Entit
 
         if (affectsFeatures) {
             //noinspection unchecked
-            ((EntityModelVertexConsumerOverrideAccessor) getParentModel()).gimm1q$setConsumerOverride(
+            ((EntityModelVertexConsumerOverrideAccessor) getParentModel()).derelictGimm1q$setConsumerOverride(
                 (BiFunction<LivingEntity, MultiBufferSource, ModelOverlayVertexConsumer>) vertexConsumerPicker,
                 entity
             );

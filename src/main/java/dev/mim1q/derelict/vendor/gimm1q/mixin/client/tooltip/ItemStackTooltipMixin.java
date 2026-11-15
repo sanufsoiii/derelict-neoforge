@@ -6,6 +6,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.mim1q.derelict.vendor.gimm1q.client.tooltip.TooltipResolverRegistry;
 import dev.mim1q.derelict.vendor.gimm1q.client.tooltip.TooltipResolverRegistry.TooltipHelper;
+import dev.mim1q.derelict.vendor.gimm1q.client.tooltip.TooltipResolverRegistry.TooltipResolver;
 import dev.mim1q.derelict.vendor.gimm1q.client.tooltip.TooltipResolverRegistry.TooltipResolverContext;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -29,13 +30,13 @@ import net.minecraft.world.item.TooltipFlag;
 @Mixin(ItemStack.class)
 public abstract class ItemStackTooltipMixin {
     @Unique
-    private static List<Tuple<Component, Boolean>> gimm1q$tooltipsToAdd = List.of();
+    private static List<Tuple<Component, Boolean>> derelictGimm1q$tooltipsToAdd = List.of();
     @Unique
-    private long gimm1q$lastTooltipTime = 0;
+    private long derelictGimm1q$lastTooltipTime = 0;
     //    @Unique
-//    private static List<ItemStack.TooltipSection> gimm1q$hiddenTooltipSections = List.of();
+//    private static List<ItemStack.TooltipSection> derelictGimm1q$hiddenTooltipSections = List.of();
     @Unique
-    private static Style gimm1q$defaultStyle = Style.EMPTY;
+    private static Style derelictGimm1q$defaultStyle = Style.EMPTY;
 
     @Shadow
     public abstract Item getItem();
@@ -44,7 +45,7 @@ public abstract class ItemStackTooltipMixin {
         method = "getTooltipLines",
         at = @At("HEAD")
     )
-    private void gimm1q$onGetTooltip(
+    private void derelictGimm1q$onGetTooltip(
         Item.TooltipContext context, Player player, TooltipFlag type, CallbackInfoReturnable<List<Component>> cir, @Share("tooltip") LocalRef<List<Component>> tooltip
     ) {
         if (player == null) return;
@@ -60,8 +61,8 @@ public abstract class ItemStackTooltipMixin {
 
         final List<Tuple<Component, Boolean>> currentTooltip;
 
-        if (currentTime - gimm1q$lastTooltipTime <= 60) {
-            currentTooltip = gimm1q$tooltipsToAdd;
+        if (currentTime - derelictGimm1q$lastTooltipTime <= 60) {
+            currentTooltip = derelictGimm1q$tooltipsToAdd;
         } else {
             currentTooltip = new ArrayList<>();
 
@@ -80,13 +81,13 @@ public abstract class ItemStackTooltipMixin {
 
 //                    @Override
 //                    public TooltipHelper hideSections(ItemStack.TooltipSection... sections) {
-//                        gimm1q$hiddenTooltipSections.addAll(List.of(sections));
+//                        derelictGimm1q$hiddenTooltipSections.addAll(List.of(sections));
 //                        return this;
 //                    }
 
                     @Override
                     public TooltipHelper defaultStyle(Style style) {
-                        gimm1q$defaultStyle = style;
+                        derelictGimm1q$defaultStyle = style;
                         return this;
                     }
 
@@ -108,10 +109,10 @@ public abstract class ItemStackTooltipMixin {
             currentTooltip.clear();
             currentTooltip.addAll(newCurrentTooltip);
 
-            gimm1q$tooltipsToAdd = currentTooltip;
+            derelictGimm1q$tooltipsToAdd = currentTooltip;
         }
 
-        gimm1q$lastTooltipTime = currentTime;
+        derelictGimm1q$lastTooltipTime = currentTime;
 
         var newTooltip = new ArrayList<Component>();
         var altPressed = InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LALT);
@@ -123,7 +124,7 @@ public abstract class ItemStackTooltipMixin {
             }
             var text = pair.getA();
             if (text.getStyle().isEmpty()) {
-                text = text.copy().setStyle(gimm1q$defaultStyle);
+                text = text.copy().setStyle(derelictGimm1q$defaultStyle);
             }
             newTooltip.add(text);
         }
@@ -142,11 +143,11 @@ public abstract class ItemStackTooltipMixin {
         method = "getTooltipLines",
         at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/world/item/TooltipFlag;isAdvanced()Z",
+            target = "net.minecraft.item.tooltip.TooltipType.isAdvanced()Z",
             ordinal = 0
         )
     )
-    private void gimm1q$onGetTooltip2(
+    private void derelictGimm1q$onGetTooltip2(
         Item.TooltipContext context, Player player, TooltipFlag type, CallbackInfoReturnable<List<Component>> cir, @Local(ordinal = 0) List<Component> list, @Share("tooltip") LocalRef<List<Component>> tooltip
     ) {
         var newTooltip = tooltip.get();
@@ -159,11 +160,11 @@ public abstract class ItemStackTooltipMixin {
 //        at = @At("RETURN"),
 //        cancellable = true
 //    )
-//    private void gimm1q$onGetHideFlags(CallbackInfoReturnable<Integer> cir) {
-//        if (gimm1q$hiddenTooltipSections.isEmpty()) return;
+//    private void derelictGimm1q$onGetHideFlags(CallbackInfoReturnable<Integer> cir) {
+//        if (derelictGimm1q$hiddenTooltipSections.isEmpty()) return;
 //
 //        var result = cir.getReturnValue();
-//        for (var section : gimm1q$hiddenTooltipSections) {
+//        for (var section : derelictGimm1q$hiddenTooltipSections) {
 //            result |= section.getFlag();
 //        }
 //        cir.setReturnValue(result);

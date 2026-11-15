@@ -1,13 +1,10 @@
 package dev.mim1q.derelict.particle.colored
 
-import net.fabricmc.fabric.api.client.particle.v1.FabricSpriteProvider
-import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry.PendingParticleFactory
+import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.client.particle.Particle
 import net.minecraft.client.particle.ParticleProvider
-import net.minecraft.client.particle.TextureSheetParticle
 import net.minecraft.client.particle.SpriteSet
-import net.minecraft.client.multiplayer.ClientLevel
-
+import net.minecraft.client.particle.TextureSheetParticle
 
 abstract class ColoredParticle(
     world: ClientLevel,
@@ -59,17 +56,6 @@ abstract class ColoredParticle(
             particle.pickSprite(spriteProvider)
             particle.spriteProvider = spriteProvider
             return particle
-        }
-    }
-
-    companion object {
-        fun createFactory(constructor: ColoredParticleConstructor): PendingParticleFactory<ColoredParticleEffect> {
-            return PendingParticleFactory { spriteProvider: FabricSpriteProvider ->
-                Factory(
-                    spriteProvider,
-                    constructor
-                )
-            }
         }
     }
 }

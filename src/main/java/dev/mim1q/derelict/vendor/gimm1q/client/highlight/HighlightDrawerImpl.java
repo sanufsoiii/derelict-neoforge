@@ -1,9 +1,8 @@
 package dev.mim1q.derelict.vendor.gimm1q.client.highlight;
 
+
 import dev.mim1q.derelict.vendor.gimm1q.Gimm1q;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.minecraft.client.Camera;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -14,29 +13,34 @@ import org.jetbrains.annotations.ApiStatus;
 import static net.minecraft.util.Mth.sign;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.PoseStack.Pose;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
 @ApiStatus.Internal
-@Environment(EnvType.CLIENT)
+
 public class HighlightDrawerImpl implements HighlightDrawer {
     public static final HighlightDrawerImpl INSTANCE = new HighlightDrawerImpl();
     private static final ResourceLocation TEXTURE = Gimm1q.id("textures/block/white.png");
 
-    private WorldRenderContext renderContext = null;
+    private PoseStack matrixStack = null;
+    private MultiBufferSource consumers = null;
+    private Camera camera = null;
 
     private HighlightDrawerImpl() {
     }
 
-    public static void setRenderContext(WorldRenderContext renderContext) {
-        INSTANCE.renderContext = renderContext;
+    public static void setRenderContext(PoseStack matrixStack, MultiBufferSource consumers, Camera camera) {
+        INSTANCE.matrixStack = matrixStack;
+        INSTANCE.consumers = consumers;
+        INSTANCE.camera = camera;
     }
 
     @Override
     public void drawHighlight(AABB box, int colorArgb, int outlineArgb) {
-        if (renderContext == null) return;
+        if (camera == null) return;
 
-        var matrices = renderContext.matrixStack();
-        var vertexConsumers = renderContext.consumers();
+        var matrices = matrixStack;
+        var vertexConsumers = consumers;
         if (matrices == null || vertexConsumers == null) return;
 
         var vertices = new float[][]{
@@ -52,7 +56,7 @@ public class HighlightDrawerImpl implements HighlightDrawer {
 
         matrices.pushPose();
         {
-            matrices.translate(-renderContext.camera().getPosition().x, -renderContext.camera().getPosition().y, -renderContext.camera().getPosition().z);
+            matrices.translate(-camera.getPosition().x, -camera.getPosition().y, -camera.getPosition().z);
             drawFace(matrices, vertexConsumers, new float[][]{vertices[3], vertices[2], vertices[0], vertices[1]}, colorArgb, outlineArgb);
             drawFace(matrices, vertexConsumers, new float[][]{vertices[6], vertices[7], vertices[5], vertices[4]}, colorArgb, outlineArgb);
             drawFace(matrices, vertexConsumers, new float[][]{vertices[2], vertices[6], vertices[4], vertices[0]}, colorArgb, outlineArgb);

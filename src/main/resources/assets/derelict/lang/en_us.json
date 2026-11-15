@@ -247,5 +247,16 @@
   "tag.block.derelict.cover_boards": "Cover Boards",
   "tag.block.derelict.metal_sheets": "Metal Sheets",
   "tag.entity_type.derelict.spawns_spiderlings_on_death": "Spawns Spiderlings On Death",
-  "category.derelict.aging": "Aging"
+  "category.derelict.aging": "Aging",
+  "derelict.port.assets.title": "Original Derelict assets",
+  "derelict.port.assets.text": "This unofficial NeoForge port does not contain the original textures and models: they are All Rights Reserved by Mim1q. Download the original Derelict 2.1.0 jar for 1.21.1 and put it into the resourcepacks folder. The port will load its assets automatically. Without it blocks and mobs use the missing-texture look.",
+  "derelict.port.assets.button.curseforge": "Open CurseForge page",
+  "derelict.port.assets.button.modrinth": "Open Modrinth page",
+  "derelict.port.assets.button.open_folder": "Open resourcepacks folder",
+  "derelict.port.assets.button.check_again": "Check again",
+  "derelict.port.assets.button.continue": "Continue",
+  "derelict.port.assets.dont_show_again": "Don't show again",
+  "derelict.port.assets.not_found": "The jar was not found in the resourcepacks folder.",
+  "derelict.port.assets.pack_name": "Derelict original assets",
+  "derelict.port.assets.pack_description": "Textures and models from the original Derelict jar (%s)"
 }

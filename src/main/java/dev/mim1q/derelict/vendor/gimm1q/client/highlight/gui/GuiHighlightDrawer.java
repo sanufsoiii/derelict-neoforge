@@ -1,8 +1,7 @@
 package dev.mim1q.derelict.vendor.gimm1q.client.highlight.gui;
 
+
 import dev.mim1q.derelict.vendor.gimm1q.Gimm1q;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
@@ -12,7 +11,7 @@ import net.minecraft.world.item.ItemStack;
  *
  * @see GuiHighlightDrawerCallback
  */
-@Environment(EnvType.CLIENT)
+
 public interface GuiHighlightDrawer {
     /**
      * The default texture used for highlighting items. A simple white outline with a transparent center.

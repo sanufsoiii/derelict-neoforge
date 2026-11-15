@@ -1,7 +1,6 @@
 package dev.mim1q.derelict.vendor.gimm1q.client.item.handheld;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -29,7 +28,7 @@ import net.minecraft.world.item.Item;
  * corresponding model suffixed with {@code _handheld} for the handheld model.
  * </p>
  */
-@Environment(EnvType.CLIENT)
+
 public interface HandheldItemModelRegistry {
     /**
      * Register a handheld item model for an Item. Assumes the default model ID for the GUI model, and will use the

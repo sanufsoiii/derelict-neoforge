@@ -12,11 +12,11 @@ import net.minecraft.world.entity.LivingEntity;
 @ApiStatus.NonExtendable
 @ApiStatus.Internal
 public interface EntityModelVertexConsumerOverrideAccessor {
-    void gimm1q$setConsumerOverride(
+    void derelictGimm1q$setConsumerOverride(
         @Nullable BiFunction<LivingEntity, MultiBufferSource, ModelOverlayVertexConsumer> vertexConsumerPicker,
         @Nullable LivingEntity lastModelEntity
     );
 
     @Nullable
-    VertexConsumer gimm1q$getConsumerOverride(MultiBufferSource vertexConsumerProvider);
+    VertexConsumer derelictGimm1q$getConsumerOverride(MultiBufferSource vertexConsumerProvider);
 }

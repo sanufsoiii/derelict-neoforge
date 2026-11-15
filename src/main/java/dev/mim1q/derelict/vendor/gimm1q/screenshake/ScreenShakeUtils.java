@@ -1,7 +1,7 @@
 package dev.mim1q.derelict.vendor.gimm1q.screenshake;
 
 import dev.mim1q.derelict.vendor.gimm1q.network.s2c.CameraShakeS2CPacket;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
@@ -20,7 +20,7 @@ public class ScreenShakeUtils {
      * @see ScreenShakeModifiers
      */
     public static void applyShake(ServerPlayer player, float intensity, int duration, String modifierName) {
-        ServerPlayNetworking.send(player, new CameraShakeS2CPacket(intensity, duration, modifierName));
+        PacketDistributor.sendToPlayer(player, new CameraShakeS2CPacket(intensity, duration, modifierName));
     }
 
     /**

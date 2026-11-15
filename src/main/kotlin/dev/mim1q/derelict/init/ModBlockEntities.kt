@@ -2,12 +2,11 @@ package dev.mim1q.derelict.init
 
 import dev.mim1q.derelict.Derelict
 import dev.mim1q.derelict.block.cobweb.SpiderEggBlock.SpiderEggBlockEntity
-import net.fabricmc.fabric.api.`object`.builder.v1.block.entity.FabricBlockEntityTypeBuilder
+import net.minecraft.core.Registry
+import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.entity.BlockEntityType
-import net.minecraft.core.registries.BuiltInRegistries
-import net.minecraft.core.Registry
 
 object ModBlockEntities {
     val SPIDER_EGG_BLOCK_ENTITY = register(
@@ -22,11 +21,11 @@ object ModBlockEntities {
 
     private fun <T : BlockEntity> register(
         id: String,
-        factory: FabricBlockEntityTypeBuilder.Factory<T>,
+        factory: BlockEntityType.BlockEntitySupplier<T>,
         vararg blocks: Block
     ): BlockEntityType<T> = Registry.register(
         BuiltInRegistries.BLOCK_ENTITY_TYPE,
         Derelict.id(id),
-        FabricBlockEntityTypeBuilder.create(factory).addBlocks(*blocks).build()
+        BlockEntityType.Builder.of(factory, *blocks).build(null)
     )
 }

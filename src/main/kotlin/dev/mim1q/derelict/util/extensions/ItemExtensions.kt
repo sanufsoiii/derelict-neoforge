@@ -2,12 +2,10 @@
 
 package dev.mim1q.derelict.util.extensions
 
-import net.fabricmc.fabric.api.`object`.builder.v1.block.FabricBlockSettings
-import net.minecraft.world.level.block.state.BlockBehaviour.Properties
 import net.minecraft.core.component.DataComponents
-import net.minecraft.world.item.component.CustomData
-import net.minecraft.world.item.ItemStack
 import net.minecraft.nbt.CompoundTag
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.component.CustomData
 
 fun ItemStack.getNbt(): CompoundTag {
     val component = get(DataComponents.CUSTOM_DATA)
@@ -29,5 +27,3 @@ fun ItemStack.updateNbt(updater: CompoundTag.() -> Unit) {
     updater(nbt)
     setNbt(nbt)
 }
-
-fun Properties.copy(): Properties = FabricBlockSettings.copyOf(this)

@@ -5,6 +5,7 @@ import dev.mim1q.derelict.item.CrosshairTipItem;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.HoneycombItem;
 import net.minecraft.world.level.block.Block;
+import net.neoforged.neoforge.common.DataMapHooks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,7 +25,8 @@ public class HoneycombItemClientMixin implements CrosshairTipItem {
         if (block == null || !DerelictConfigs.CLIENT_CONFIG.waxableCrosshairTip()) return false;
         if (block == lastBlock) return didShowTip;
         lastBlock = block;
-        didShowTip = HoneycombItem.WAXABLES.get().containsKey(block);
+        // NeoForge replaces the vanilla waxable map with a data map; the hook covers both.
+        didShowTip = DataMapHooks.getBlockWaxed(block) != null;
         return didShowTip;
     }
 

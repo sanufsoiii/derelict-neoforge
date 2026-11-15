@@ -46,8 +46,8 @@ public abstract class LivingEntityMixin extends Entity {
         ) {
             var spiderling = ModEntities.INSTANCE.getSPIDERLING().create(level());
             if (spiderling == null) return;
-            spiderling.refreshPositionAndAngles(getX(), getY(), getZ(), random.nextFloat() * 360, 0);
-            spiderling.initialize(
+            spiderling.moveTo(getX(), getY(), getZ(), random.nextFloat() * 360, 0);
+            spiderling.finalizeSpawn(
                 (ServerLevelAccessor) level(),
                 level().getCurrentDifficultyAt(blockPosition()),
                 MobSpawnType.EVENT,

@@ -17,6 +17,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.stream.Stream;
 import net.minecraft.commands.arguments.NbtPathArgument;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -28,6 +29,7 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -36,6 +38,7 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 import static dev.mim1q.derelict.vendor.gimm1q.util.Gimm1qCodecUtil.createIdentifierToRegistryCodec;
 import static net.minecraft.core.component.DataComponents.CUSTOM_DATA;
+
 
 /**
  * This class contains some basic types of {@link VariableSource}s with examples on how to implement them

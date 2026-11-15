@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.ItemModelShaper;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -32,7 +33,7 @@ public abstract class ItemRendererMixin {
         at = @At("HEAD"),
         cancellable = true
     )
-    private void gimm1q$getModel(ItemStack stack, Level world, LivingEntity entity, int seed, CallbackInfoReturnable<BakedModel> cir) {
+    private void derelictGimm1q$getModel(ItemStack stack, Level world, LivingEntity entity, int seed, CallbackInfoReturnable<BakedModel> cir) {
         var model = HandheldItemModelRegistryImpl.MODELS.get(stack.getItem());
         if (model != null) {
             var bakedModel = getItemModelShaper().getModelManager().getModel(model.getA());
@@ -47,7 +48,7 @@ public abstract class ItemRendererMixin {
         at = @At("HEAD"),
         cancellable = true
     )
-    private void gimm1q$renderItem(
+    private void derelictGimm1q$render(
         LivingEntity entity,
         ItemStack item,
         ItemDisplayContext renderMode,

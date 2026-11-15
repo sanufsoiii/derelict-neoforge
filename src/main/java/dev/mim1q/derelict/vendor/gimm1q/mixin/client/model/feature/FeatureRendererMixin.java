@@ -1,6 +1,7 @@
 package dev.mim1q.derelict.vendor.gimm1q.mixin.client.model.feature;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.mim1q.derelict.vendor.gimm1q.accessor.client.EntityModelVertexConsumerOverrideAccessor;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -21,7 +22,7 @@ public abstract class FeatureRendererMixin {
         method = "renderColoredCutoutModel",
         at = @At("RETURN")
     )
-    private static <T extends LivingEntity> void gimm1q$renderModelOverlay(
+    private static <T extends LivingEntity> void derelictGimm1q$renderModelOverlay(
         EntityModel<T> model,
         ResourceLocation texture,
         PoseStack matrices,
@@ -32,7 +33,7 @@ public abstract class FeatureRendererMixin {
         CallbackInfo ci
     ) {
         if (model == null) return;
-        final var consumer = ((EntityModelVertexConsumerOverrideAccessor) model).gimm1q$getConsumerOverride(vertexConsumers);
+        final var consumer = ((EntityModelVertexConsumerOverrideAccessor) model).derelictGimm1q$getConsumerOverride(vertexConsumers);
         if (consumer == null) return;
 
         model.renderToBuffer(matrices, consumer, light, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);

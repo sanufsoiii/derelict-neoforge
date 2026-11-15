@@ -29,7 +29,7 @@ public abstract class DrawContextMixin {
         method = "renderItem(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;IIII)V",
         at = @At("TAIL")
     )
-    private void gimm1q$injectDrawItem(
+    private void derelictGimm1q$injectDrawItem(
         LivingEntity entity,
         Level world,
         ItemStack stack,

@@ -7,6 +7,7 @@ import net.minecraft.world.entity.ai.targeting.TargetingConditions
 import net.minecraft.world.entity.monster.Monster
 import net.minecraft.world.entity.projectile.AbstractArrow
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
 import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.sounds.SoundEvent
@@ -69,5 +70,7 @@ class SpiderEggProjectile(
 
     override fun getDefaultHitGroundSoundEvent(): SoundEvent = SoundEvents.ITEM_PICKUP
 
-    override fun getDefaultPickupItem(): ItemStack = ItemStack.EMPTY
+    // AbstractArrow#addAdditionalSaveData always writes this stack; an empty one throws on 1.21.1.
+    // Pickup stays DISALLOWED, so this only supplies a valid NBT value.
+    override fun getDefaultPickupItem(): ItemStack = ItemStack(Items.SPIDER_EYE)
 }

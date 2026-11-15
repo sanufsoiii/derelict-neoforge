@@ -1,9 +1,8 @@
 package dev.mim1q.derelict.vendor.gimm1q.client.highlight.crosshair;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.event.Event;
-import net.fabricmc.fabric.api.event.EventFactory;
+
+import dev.mim1q.derelict.vendor.gimm1q.event.Event;
+import dev.mim1q.derelict.vendor.gimm1q.event.EventFactory;
 import net.minecraft.world.entity.player.Player;
 
 /**
@@ -26,7 +25,7 @@ import net.minecraft.world.entity.player.Player;
  * }</pre>
  */
 @FunctionalInterface
-@Environment(EnvType.CLIENT)
+
 public interface CrosshairTipDrawerCallback {
     Event<CrosshairTipDrawerCallback> EVENT = EventFactory.createArrayBacked(
         CrosshairTipDrawerCallback.class,

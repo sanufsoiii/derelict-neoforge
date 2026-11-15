@@ -1,0 +1,88 @@
+{
+  "values": {
+    "derelict:noctisteel_block": {
+      "next_oxidation_stage": "derelict:weathered_noctisteel_block"
+    },
+    "derelict:weathered_noctisteel_block": {
+      "next_oxidation_stage": "derelict:oxidized_noctisteel_block"
+    },
+    "derelict:cut_noctisteel": {
+      "next_oxidation_stage": "derelict:weathered_cut_noctisteel"
+    },
+    "derelict:weathered_cut_noctisteel": {
+      "next_oxidation_stage": "derelict:oxidized_cut_noctisteel"
+    },
+    "derelict:noctisteel_pillar": {
+      "next_oxidation_stage": "derelict:weathered_noctisteel_pillar"
+    },
+    "derelict:weathered_noctisteel_pillar": {
+      "next_oxidation_stage": "derelict:oxidized_noctisteel_pillar"
+    },
+    "derelict:cut_noctisteel_stairs": {
+      "next_oxidation_stage": "derelict:weathered_cut_noctisteel_stairs"
+    },
+    "derelict:weathered_cut_noctisteel_stairs": {
+      "next_oxidation_stage": "derelict:oxidized_cut_noctisteel_stairs"
+    },
+    "derelict:cut_noctisteel_slab": {
+      "next_oxidation_stage": "derelict:weathered_cut_noctisteel_slab"
+    },
+    "derelict:weathered_cut_noctisteel_slab": {
+      "next_oxidation_stage": "derelict:oxidized_cut_noctisteel_slab"
+    },
+    "derelict:noctisteel_trapdoor": {
+      "next_oxidation_stage": "derelict:weathered_noctisteel_trapdoor"
+    },
+    "derelict:weathered_noctisteel_trapdoor": {
+      "next_oxidation_stage": "derelict:oxidized_noctisteel_trapdoor"
+    },
+    "derelict:noctisteel_chain": {
+      "next_oxidation_stage": "derelict:weathered_noctisteel_chain"
+    },
+    "derelict:weathered_noctisteel_chain": {
+      "next_oxidation_stage": "derelict:oxidized_noctisteel_chain"
+    },
+    "derelict:noctisteel_grate": {
+      "next_oxidation_stage": "derelict:weathered_noctisteel_grate"
+    },
+    "derelict:weathered_noctisteel_grate": {
+      "next_oxidation_stage": "derelict:oxidized_noctisteel_grate"
+    },
+    "derelict:noctisteel_beam": {
+      "next_oxidation_stage": "derelict:weathered_noctisteel_beam"
+    },
+    "derelict:weathered_noctisteel_beam": {
+      "next_oxidation_stage": "derelict:oxidized_noctisteel_beam"
+    },
+    "derelict:noctisteel_ladder": {
+      "next_oxidation_stage": "derelict:weathered_noctisteel_ladder"
+    },
+    "derelict:weathered_noctisteel_ladder": {
+      "next_oxidation_stage": "derelict:oxidized_noctisteel_ladder"
+    },
+    "derelict:noctisteel_patch": {
+      "next_oxidation_stage": "derelict:weathered_noctisteel_patch"
+    },
+    "derelict:weathered_noctisteel_patch": {
+      "next_oxidation_stage": "derelict:oxidized_noctisteel_patch"
+    },
+    "derelict:noctisteel_sheet": {
+      "next_oxidation_stage": "derelict:weathered_noctisteel_sheet"
+    },
+    "derelict:weathered_noctisteel_sheet": {
+      "next_oxidation_stage": "derelict:oxidized_noctisteel_sheet"
+    },
+    "derelict:noctisteel_chain_link_fence": {
+      "next_oxidation_stage": "derelict:weathered_noctisteel_chain_link_fence"
+    },
+    "derelict:weathered_noctisteel_chain_link_fence": {
+      "next_oxidation_stage": "derelict:oxidized_noctisteel_chain_link_fence"
+    },
+    "derelict:noctisteel_barbed_wire": {
+      "next_oxidation_stage": "derelict:weathered_noctisteel_barbed_wire"
+    },
+    "derelict:weathered_noctisteel_barbed_wire": {
+      "next_oxidation_stage": "derelict:oxidized_noctisteel_barbed_wire"
+    }
+  }
+}

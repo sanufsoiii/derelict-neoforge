@@ -2,7 +2,6 @@ package dev.mim1q.derelict.vendor.gimm1q.client.tooltip;
 
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.network.chat.Component;

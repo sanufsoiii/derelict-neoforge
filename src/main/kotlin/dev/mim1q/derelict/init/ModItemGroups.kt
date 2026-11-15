@@ -12,7 +12,20 @@ object ModItemGroups {
     private val ITEM_GROUP_TEXTURE = Derelict.id("textures/gui/item_group_background.png")
     private val TAB_TEXTURE = Derelict.id("textures/gui/tabs.png")
 
-    internal val ITEM_GROUP: OwoItemGroup = OwoItemGroup.builder(Derelict.id("derelict")) {
+    private var group: OwoItemGroup? = null
+
+    /**
+     * owo registers the tab into {@code CREATIVE_MODE_TAB} in {@code initialize()}, so this must only be
+     * touched from the registration phase (see [Derelict]).
+     */
+    internal val ITEM_GROUP: OwoItemGroup
+        get() = group ?: create().also { group = it }
+
+    fun init() {
+        ITEM_GROUP
+    }
+
+    private fun create(): OwoItemGroup = OwoItemGroup.builder(Derelict.id("derelict")) {
         Icon.of(ModBlocksAndItems.FLICKERING_REDSTONE_LAMP.asItem().defaultInstance)
     }.backgroundTexture(ITEM_GROUP_TEXTURE).build().apply {
         tabs.add(

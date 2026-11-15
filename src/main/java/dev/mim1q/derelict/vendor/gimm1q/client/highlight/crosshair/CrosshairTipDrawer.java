@@ -1,7 +1,6 @@
 package dev.mim1q.derelict.vendor.gimm1q.client.highlight.crosshair;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+
 import net.minecraft.resources.ResourceLocation;
 
 /**
@@ -10,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
  *
  * @see CrosshairTipDrawerCallback
  */
-@Environment(EnvType.CLIENT)
+
 public interface CrosshairTipDrawer {
     /**
      * Draw a texture, centered at the crosshair's position and then offset by the given values.

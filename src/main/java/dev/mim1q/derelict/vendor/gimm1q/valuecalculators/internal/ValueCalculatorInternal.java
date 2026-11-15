@@ -13,6 +13,7 @@ import redempt.crunch.Crunch;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.minecraft.util.RandomSource;
 

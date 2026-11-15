@@ -2,18 +2,17 @@ package dev.mim1q.derelict.featureset
 
 import dev.mim1q.derelict.init.ModBlocksAndItems
 import dev.mim1q.derelict.init.ModBlocksAndItems.ItemCategory
-import dev.mim1q.derelict.util.extensions.copy
-import net.minecraft.world.level.block.state.BlockBehaviour
-import net.minecraft.world.level.block.state.BlockBehaviour.Properties
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.item.Item
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
-import net.minecraft.world.item.Item
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.level.block.state.BlockBehaviour
+import net.minecraft.world.level.block.state.BlockBehaviour.Properties
 
 abstract class FeatureSet(
     id: ResourceLocation,
     protected val defaultItemSettings: Item.Properties = Item.Properties(),
-    private val defaultBlockSettings: Properties = Properties.ofFullCopy(Blocks.STONE)
+    private val defaultBlockSettingsFactory: () -> Properties = { Properties.ofFullCopy(Blocks.STONE) }
 ) {
     protected val name = id.path
     protected val namespace = id.namespace
@@ -35,5 +34,6 @@ abstract class FeatureSet(
         category: ItemCategory = ItemCategory.GENERAL
     ): B = ModBlocksAndItems.register(name, block, category)
 
-    protected fun defaultBlockSettings(): BlockBehaviour.Properties = defaultBlockSettings.copy()
+    /** A fresh copy per block; on Fabric this was `defaultBlockSettings.copy()`. */
+    protected fun defaultBlockSettings(): BlockBehaviour.Properties = defaultBlockSettingsFactory()
 }

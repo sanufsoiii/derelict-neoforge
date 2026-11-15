@@ -20,6 +20,7 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static net.minecraft.util.Mth.sign;
 
+
 @ApiStatus.Internal
 @Mixin(LocalPlayer.class)
 public abstract class ClientPlayerScreenShakeMixin extends LivingEntity implements ScreenShakeAccessor {
@@ -45,7 +46,7 @@ public abstract class ClientPlayerScreenShakeMixin extends LivingEntity implemen
     }
 
     @Override
-    public void shakeCamera(float intensity, int duration) {
+    public void derelictGimm1q$shakeCamera(float intensity, int duration) {
         if (cameraShakeTicks >= cameraShakeDuration || intensity >= lastIntensity) {
             this.lastIntensity = intensity;
             this.cameraShakeTicks = 0;
@@ -55,7 +56,7 @@ public abstract class ClientPlayerScreenShakeMixin extends LivingEntity implemen
     }
 
     @Inject(method = "tick", at = @At("HEAD"))
-    private void gimm1q$tick(CallbackInfo ci) {
+    private void derelictGimm1q$tick(CallbackInfo ci) {
         if (this.cameraShakeTicks <= this.cameraShakeDuration) {
             if (this.cameraShakeTicks == 5) {
                 this.cameraShakeIntensity.transitionTo(
@@ -81,7 +82,7 @@ public abstract class ClientPlayerScreenShakeMixin extends LivingEntity implemen
         method = "getViewXRot(F)F",
         at = @At("RETURN")
     )
-    private float gimm1q$getPitch(float pitch, float tickDelta) {
+    private float derelictGimm1q$getPitch(float pitch, float tickDelta) {
         if (this.cameraShakeDuration > 0 && Math.abs(cameraShakePitch) > 0.0001f) {
             return pitch + easeShake(this.lastCameraShakePitch, this.cameraShakePitch, tickDelta);
         }
@@ -92,7 +93,7 @@ public abstract class ClientPlayerScreenShakeMixin extends LivingEntity implemen
         method = "getViewYRot(F)F",
         at = @At("RETURN")
     )
-    private float gimm1q$getYaw(float yaw, float tickDelta) {
+    private float derelictGimm1q$getYaw(float yaw, float tickDelta) {
         if (this.cameraShakeDuration > 0 && Math.abs(cameraShakeYaw) > 0.0001f) {
             return yaw + easeShake(this.lastCameraShakeYaw, this.cameraShakeYaw, tickDelta);
         }

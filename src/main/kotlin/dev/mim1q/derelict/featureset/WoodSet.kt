@@ -1,8 +1,8 @@
 package dev.mim1q.derelict.featureset
 
-import net.fabricmc.fabric.api.`object`.builder.v1.block.type.BlockSetTypeBuilder
-import net.fabricmc.fabric.api.`object`.builder.v1.block.type.WoodTypeBuilder
-import net.fabricmc.fabric.api.registry.StrippableBlockRegistry
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.SignItem
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.ButtonBlock
@@ -19,16 +19,17 @@ import net.minecraft.world.level.block.WallSignBlock
 import net.minecraft.world.level.block.state.BlockBehaviour
 import net.minecraft.world.level.block.state.properties.BlockSetType
 import net.minecraft.world.level.block.state.properties.WoodType
-import net.minecraft.world.item.Item
-import net.minecraft.world.item.SignItem
-import net.minecraft.resources.ResourceLocation
+import net.neoforged.neoforge.common.ItemAbilities
+import net.neoforged.neoforge.event.level.BlockEvent
 
 class WoodSet(
     id: ResourceLocation,
     defaultItemSettings: Item.Properties = Item.Properties(),
-) : FeatureSet(id, defaultItemSettings, BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_WOOD)) {
-    val blockSetType = BlockSetTypeBuilder.copyOf(BlockSetType.OAK).register(id)
-    val woodType = WoodTypeBuilder.copyOf(WoodType.OAK).register(id, blockSetType)
+) : FeatureSet(id, defaultItemSettings, { BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_WOOD) }) {
+    // Fabric: BlockSetTypeBuilder.copyOf(BlockSetType.OAK).register(id)
+    val blockSetType = BlockSetType.register(BlockSetType(id.toString()))
+    // Fabric: WoodTypeBuilder.copyOf(WoodType.OAK).register(id, blockSetType)
+    val woodType = WoodType.register(WoodType(id.toString(), blockSetType))
 
     val planks = Block(defaultBlockSettings())
     val log = RotatedPillarBlock(defaultBlockSettings())
@@ -42,8 +43,7 @@ class WoodSet(
     val fence = FenceBlock(defaultBlockSettings())
     val fenceGate = FenceGateBlock(woodType, defaultBlockSettings())
     val button = ButtonBlock(blockSetType, 20, defaultBlockSettings())
-    val pressurePlate =
-        PressurePlateBlock(blockSetType, defaultBlockSettings())
+    val pressurePlate = PressurePlateBlock(blockSetType, defaultBlockSettings())
     val sign = StandingSignBlock(woodType, defaultBlockSettings().noCollission())
     val wallSign = WallSignBlock(woodType, defaultBlockSettings().noCollission())
 
@@ -64,7 +64,19 @@ class WoodSet(
         registerBlock("${name}_sign", sign)
         registerBlock("${name}_wall_sign", wallSign)
         registerItem("${name}_sign", SignItem(defaultItemSettings.stacksTo(16), sign, wallSign))
-        StrippableBlockRegistry.register(log, strippedLog)
-        StrippableBlockRegistry.register(wood, strippedWood)
+        STRIPPABLES[log] = strippedLog
+        STRIPPABLES[wood] = strippedWood
+    }
+
+    companion object {
+        /** Fabric: StrippableBlockRegistry.register. On NeoForge stripping is a BlockToolModificationEvent. */
+        private val STRIPPABLES = mutableMapOf<Block, Block>()
+
+        fun onToolModification(event: BlockEvent.BlockToolModificationEvent) {
+            if (event.itemAbility != ItemAbilities.AXE_STRIP) return
+            val stripped = STRIPPABLES[event.state.block] ?: return
+            // Also set while simulated: the simulation asks "would this work", the answer must match.
+            event.finalState = stripped.withPropertiesOf(event.state)
+        }
     }
 }

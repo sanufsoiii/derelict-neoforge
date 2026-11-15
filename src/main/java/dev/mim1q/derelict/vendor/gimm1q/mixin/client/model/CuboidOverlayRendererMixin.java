@@ -6,6 +6,8 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.mim1q.derelict.vendor.gimm1q.client.render.overlay.ModelOverlayVertexConsumer;
 import dev.mim1q.derelict.vendor.gimm1q.client.render.overlay.OverlayUvMapper;
 import org.jetbrains.annotations.ApiStatus;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.spongepowered.asm.mixin.Final;
@@ -19,16 +21,19 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.ModelPart.Polygon;
+import net.minecraft.client.model.geom.ModelPart.Vertex;
 import net.minecraft.core.Direction;
 
 import static net.minecraft.util.Mth.EPSILON;
+
 
 @ApiStatus.Internal
 @Mixin(ModelPart.Cube.class)
 public class CuboidOverlayRendererMixin {
     // @formatter:off
     @Unique
-    private static final ImmutableMap<Vector3f, Direction> gimm1q$DIRECTION_MAP = ImmutableMap.of(
+    private static final ImmutableMap<Vector3f, Direction> derelictGimm1q$DIRECTION_MAP = ImmutableMap.of(
         Direction.DOWN .step(), Direction.DOWN,
         Direction.UP   .step(), Direction.UP,
         Direction.WEST .step(), Direction.WEST,
@@ -38,7 +43,7 @@ public class CuboidOverlayRendererMixin {
     );
 
     @Unique
-    private static final ImmutableMap<Direction, float[][]> gimm1q$OFFSETS = ImmutableMap.of(
+    private static final ImmutableMap<Direction, float[][]> derelictGimm1q$OFFSETS = ImmutableMap.of(
         Direction.DOWN,  new float[][]{{ 1, -1,  1}, {-1, -1,  1}, {-1, -1, -1}, { 1, -1, -1}},
         Direction.UP,    new float[][]{{ 1,  1, -1}, {-1,  1, -1}, {-1,  1,  1}, { 1,  1,  1}},
         Direction.WEST,  new float[][]{{-1, -1, -1}, {-1, -1,  1}, {-1,  1,  1}, {-1,  1, -1}},
@@ -49,25 +54,25 @@ public class CuboidOverlayRendererMixin {
     // @formatter:on
 
     @Unique
-    private static final float[][] gimm1q$NO_OFFSETS = new float[][]{{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
+    private static final float[][] derelictGimm1q$NO_OFFSETS = new float[][]{{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
 
     @Shadow
     @Final
     private ModelPart.Polygon[] polygons;
     @Unique
-    private boolean gimm1q$isPlane = false;
+    private boolean derelictGimm1q$isPlane = false;
     @Unique
-    private float gimm1q$textureWidth = 1.0f;
+    private float derelictGimm1q$textureWidth = 1.0f;
     @Unique
-    private float gimm1q$textureHeight = 1.0f;
+    private float derelictGimm1q$textureHeight = 1.0f;
     @Unique
-    private boolean gimm1q$isMirrored = false;
+    private boolean derelictGimm1q$isMirrored = false;
 
     @Inject(
         method = "<init>",
         at = @At("RETURN")
     )
-    private void gimm1q$init(
+    private void derelictGimm1q$init(
         int u, int v,
         float x, float y, float z,
         float sizeX, float sizeY, float sizeZ,
@@ -78,11 +83,11 @@ public class CuboidOverlayRendererMixin {
         CallbackInfo ci
     ) {
         if (sizeX <= EPSILON || sizeY <= EPSILON || sizeZ <= EPSILON || set.isEmpty()) {
-            gimm1q$isPlane = true;
+            derelictGimm1q$isPlane = true;
         }
-        gimm1q$textureWidth = textureWidth;
-        gimm1q$textureHeight = textureHeight;
-        gimm1q$isMirrored = mirror;
+        derelictGimm1q$textureWidth = textureWidth;
+        derelictGimm1q$textureHeight = textureHeight;
+        derelictGimm1q$isMirrored = mirror;
     }
 
     @Inject(
@@ -90,11 +95,11 @@ public class CuboidOverlayRendererMixin {
         at = @At("HEAD"),
         cancellable = true
     )
-    private void gimm1q$render(
+    private void derelictGimm1q$render(
         PoseStack.Pose entry, VertexConsumer vertexConsumer, int light, int overlay, int color, CallbackInfo ci
     ) {
         if (vertexConsumer instanceof ModelOverlayVertexConsumer modelOverlayVertexConsumer) {
-            if (gimm1q$isPlane && modelOverlayVertexConsumer.shouldSkipPlanes()) {
+            if (derelictGimm1q$isPlane && modelOverlayVertexConsumer.shouldSkipPlanes()) {
                 ci.cancel();
                 return;
             }
@@ -106,20 +111,20 @@ public class CuboidOverlayRendererMixin {
             final var animationProgress = Minecraft.getInstance().gui.getGuiTicks() + Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false);
 
             for (final var quad : this.polygons) {
-                final var quadDir = gimm1q$isMirrored ? quad.normal.mul(-1f, 1f, 1f, new Vector3f()) : quad.normal;
+                final var quadDir = derelictGimm1q$isMirrored ? quad.normal.mul(-1f, 1f, 1f, new Vector3f()) : quad.normal;
 
                 var xOffsetScalar = modelOverlayVertexConsumer.getOffset();
                 var yOffsetScalar = modelOverlayVertexConsumer.getOffset();
                 var zOffsetScalar = modelOverlayVertexConsumer.getOffset();
 
                 final var normalVector = normalMatrix.transform(new Vector3f(quad.normal));
-                var direction = gimm1q$DIRECTION_MAP.get(quadDir);
+                var direction = derelictGimm1q$DIRECTION_MAP.get(quadDir);
 
-                var offset = gimm1q$NO_OFFSETS;
+                var offset = derelictGimm1q$NO_OFFSETS;
                 if (direction != null) {
-                    offset = gimm1q$OFFSETS.getOrDefault(direction, gimm1q$NO_OFFSETS);
+                    offset = derelictGimm1q$OFFSETS.getOrDefault(direction, derelictGimm1q$NO_OFFSETS);
 
-                    if (gimm1q$isMirrored) {
+                    if (derelictGimm1q$isMirrored) {
                         xOffsetScalar = -xOffsetScalar;
                         if (direction.getAxis().isVertical()) {
                             zOffsetScalar = -zOffsetScalar;
@@ -141,12 +146,12 @@ public class CuboidOverlayRendererMixin {
                     final var posVector = posMatrix.transform(new Vector4f(x, y, z, 1.0f));
 
                     final var uv = modelOverlayVertexConsumer.applyUvMapper(
-                        vertex.u * gimm1q$textureWidth / modelOverlayVertexConsumer.getTextureSize(),
-                        vertex.v * gimm1q$textureHeight / modelOverlayVertexConsumer.getTextureSize(),
+                        vertex.u * derelictGimm1q$textureWidth / modelOverlayVertexConsumer.getTextureSize(),
+                        vertex.v * derelictGimm1q$textureHeight / modelOverlayVertexConsumer.getTextureSize(),
                         new OverlayUvMapper.OverlayUvMapperQuadContext(
                             animationProgress,
                             index,
-                            gimm1q$isMirrored
+                            derelictGimm1q$isMirrored
                         )
                     );
 

@@ -13,11 +13,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 public record ValueCalculatorSyncS2CPacket(
     Map<ResourceLocation, List<ValueCalculatorInternal>> map
 ) implements CustomPacketPayload {
-    public static final Type<ValueCalculatorSyncS2CPacket> ID = new Type<>(Gimm1q.id("value_calculator_sync"));
+    public static final Type<ValueCalculatorSyncS2CPacket> ID = new Type<>(Gimm1q.registeredId("value_calculator_sync"));
     public static final StreamCodec<RegistryFriendlyByteBuf, ValueCalculatorSyncS2CPacket> CODEC = StreamCodec.ofMember(
         (packet, buf) -> Data.writeBuf(buf, packet.map()),
         (buf) -> new ValueCalculatorSyncS2CPacket(Data.readMap(buf))

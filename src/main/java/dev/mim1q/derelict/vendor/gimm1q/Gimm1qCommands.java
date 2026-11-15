@@ -5,8 +5,9 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import dev.mim1q.derelict.vendor.gimm1q.registry.ValueCalculatorResourceReloader;
 import dev.mim1q.derelict.vendor.gimm1q.valuecalculators.parameters.ValueCalculatorContext;
 import dev.mim1q.derelict.vendor.gimm1q.valuecalculators.parameters.ValueCalculatorParameter;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.loader.api.FabricLoader;
+import net.neoforged.fml.loading.FMLPaths;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.network.chat.Component;
@@ -14,15 +15,19 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
+
 public class Gimm1qCommands {
     public static void init() {
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
-            dispatcher.register(literal("gimm1q:calculate")
+        NeoForge.EVENT_BUS.addListener(RegisterCommandsEvent.class, event ->
+            event.getDispatcher().register(literal("derelict_gimm1q:calculate")
                 .requires(source -> source.hasPermission(2))
                 .then(argument("type", StringArgumentType.word())
                     .suggests((context, builder) -> {
@@ -90,8 +95,8 @@ public class Gimm1qCommands {
         );
 
 
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
-            dispatcher.register(literal("gimm1q:dump_value_calculators")
+        NeoForge.EVENT_BUS.addListener(RegisterCommandsEvent.class, event ->
+            event.getDispatcher().register(literal("derelict_gimm1q:dump_value_calculators")
                 .requires(source -> source.hasPermission(2))
                 .then(argument("holder", EntityArgument.entity())
                     .then(argument("target", EntityArgument.entity())
@@ -160,7 +165,7 @@ public class Gimm1qCommands {
         feedbackSender.accept(Component.literal("Result dumped to file " + relativePath));
 
         try {
-            var path = FabricLoader.getInstance().getGameDir();
+            var path = FMLPaths.GAMEDIR.get();
             var file = path.resolve(relativePath);
 
             Files.createDirectories(file.getParent());

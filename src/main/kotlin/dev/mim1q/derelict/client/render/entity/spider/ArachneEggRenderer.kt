@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.entity.EntityRenderer
 import net.minecraft.client.renderer.entity.EntityRendererProvider
 import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.resources.ResourceLocation
+import net.minecraft.client.resources.model.ModelResourceLocation
 import kotlin.math.sin
 
 class ArachneEggRenderer(ctx: EntityRendererProvider.Context) : EntityRenderer<ArachneEggEntity>(ctx) {
@@ -28,7 +29,7 @@ class ArachneEggRenderer(ctx: EntityRendererProvider.Context) : EntityRenderer<A
         super.render(entity, yaw, tickDelta, matrices, vertexConsumers, light)
         val world = entity.level()
         val model =
-            blockRenderManager.blockModelShaper.modelManager.getModel(MODEL_IDS.getOrElse(entity.stage) { MODEL_IDS[0] }) ?: return
+            blockRenderManager.blockModelShaper.modelManager.getModel(ModelResourceLocation.standalone(MODEL_IDS.getOrElse(entity.stage) { MODEL_IDS[0] })) ?: return
 
         val time = entity.getAnimationTime(tickDelta) * 0.15f
 

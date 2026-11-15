@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.math.Axis
 import net.minecraft.util.RandomSource
+import net.minecraft.client.resources.model.ModelResourceLocation
 import kotlin.math.sin
 
 class SpiderEggClusterRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEntityRenderer<SpiderEggBlockEntity> {
@@ -25,7 +26,7 @@ class SpiderEggClusterRenderer(ctx: BlockEntityRendererProvider.Context) : Block
     }
 
     private val models = MODEL_IDS.mapNotNull {
-        ctx.blockRenderDispatcher.blockModelShaper.modelManager.getModel(it)
+        ctx.blockRenderDispatcher.blockModelShaper.modelManager.getModel(ModelResourceLocation.standalone(it))
     }
 
     override fun render(
