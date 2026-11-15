@@ -40,6 +40,8 @@ object ModCardinalComponents {
                     { buffer -> DerelictEffectsComponent().also { it.read(buffer) } }
                 )
             )
+            // Cardinal Components copied entity components to the respawned player; keep that behaviour.
+            .copyOnDeath()
             .build()
 
     val LivingEntity.statusEffectComponent: DerelictEffectsComponent
