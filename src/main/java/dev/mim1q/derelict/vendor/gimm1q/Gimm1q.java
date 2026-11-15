@@ -9,7 +9,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.OnDatapackSyncEvent;
@@ -69,18 +68,19 @@ public class Gimm1q {
         NeoForge.EVENT_BUS.addListener(AddReloadListenerEvent.class,
             event -> event.addListener(ValueCalculatorResourceReloader.INSTANCE));
 
-        if (FMLEnvironment.dist.isDedicatedServer()) {
-            NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerLoggedInEvent.class, event -> {
-                if (event.getEntity() instanceof ServerPlayer player) {
-                    PacketDistributor.sendToPlayer(player, ValueCalculatorResourceReloader.INSTANCE.createPacket());
-                }
-            });
-            NeoForge.EVENT_BUS.addListener(OnDatapackSyncEvent.class, event ->
-                event.getRelevantPlayers().forEach(player ->
-                    PacketDistributor.sendToPlayer(player, ValueCalculatorResourceReloader.INSTANCE.createPacket())
-                )
-            );
-        }
+        // Both events only fire for a logical server. They must also fire on an integrated server:
+        // Fabric's ServerPlayConnectionEvents/SYNC_DATA_PACK_CONTENTS did, and LAN players need the
+        // value-calculator map too.
+        NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerLoggedInEvent.class, event -> {
+            if (event.getEntity() instanceof ServerPlayer player) {
+                PacketDistributor.sendToPlayer(player, ValueCalculatorResourceReloader.INSTANCE.createPacket());
+            }
+        });
+        NeoForge.EVENT_BUS.addListener(OnDatapackSyncEvent.class, event ->
+            event.getRelevantPlayers().forEach(player ->
+                PacketDistributor.sendToPlayer(player, ValueCalculatorResourceReloader.INSTANCE.createPacket())
+            )
+        );
 
         // ExtendedStatusEffect#canBeCuredWithMilk: on Fabric the milk bucket calls clearStatusEffects(), which
         // LivingEntityMixin wraps. NeoForge's milk bucket uses removeEffectsCuredBy(EffectCures.MILK) instead,
