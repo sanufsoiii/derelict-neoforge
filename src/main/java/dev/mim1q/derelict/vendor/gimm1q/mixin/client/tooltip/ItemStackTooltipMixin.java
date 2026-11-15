@@ -143,7 +143,7 @@ public abstract class ItemStackTooltipMixin {
         method = "getTooltipLines",
         at = @At(
             value = "INVOKE",
-            target = "net.minecraft.item.tooltip.TooltipType.isAdvanced()Z",
+            target = "Lnet/minecraft/world/item/TooltipFlag;isAdvanced()Z",
             ordinal = 0
         )
     )

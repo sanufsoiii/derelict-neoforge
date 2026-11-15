@@ -19,7 +19,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.ApiStatus;
 
 /**
- * Client entrypoint of the bundled gimm1q library, called from the Mine Cells client entrypoint.
+ * Client entrypoint of the bundled gimm1q library, called from the Derelict client entrypoint.
  */
 @ApiStatus.Internal
 public class Gimm1qClient {

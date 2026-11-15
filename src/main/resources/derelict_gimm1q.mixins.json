@@ -1,5 +1,5 @@
 {
-    "required": false,
+    "required": true,
     "minVersion": "0.8",
     "package": "dev.mim1q.derelict.vendor.gimm1q.mixin",
     "mixins": [
@@ -13,5 +13,8 @@
         "client.model.EntityModelMixin",
         "client.model.feature.FeatureRendererMixin",
         "client.tooltip.ItemStackTooltipMixin"
-    ]
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    }
 }
