@@ -5,7 +5,9 @@ import dev.mim1q.derelict.block.flickering.FlickeringBlock
 import dev.mim1q.derelict.init.ModBlocksAndItems
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.WeatheringCopper
+import net.minecraft.core.registries.BuiltInRegistries
 import net.neoforged.neoforge.common.DataMapHooks
+import net.neoforged.neoforge.registries.datamaps.builtin.NeoForgeDataMaps
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.context.UseOnContext
 import net.minecraft.core.particles.ParticleOptions
@@ -95,8 +97,13 @@ sealed class StaffItem(settings: Item.Properties) : Item(settings), CrosshairTip
 fun getFullAgingMap(): Map<Block, Block> {
     val map = mutableMapOf<Block, Block>()
     map.putAll(ModBlocksAndItems.BLOCK_AGING_MAP)
+    // Vanilla copper pairs are still in the vanilla map; modded pairs live in the NeoForge data map.
     WeatheringCopper.NEXT_BY_BLOCK.get().forEach { (from, to) ->
         map[from] = to
+    }
+    BuiltInRegistries.BLOCK.getDataMap(NeoForgeDataMaps.OXIDIZABLES).forEach { (key, value) ->
+        val from = BuiltInRegistries.BLOCK.get(key) ?: return@forEach
+        map[from] = value.nextOxidationStage()
     }
     DataMapHooks.INVERSE_WAXABLES_DATAMAP.forEach { (waxed, unwaxed) ->
         val aged = DataMapHooks.getNextOxidizedStage(unwaxed) ?: return@forEach
